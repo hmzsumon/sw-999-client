@@ -20,14 +20,19 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get("sw99_token")?.value;
   const { pathname } = request.nextUrl;
 
-  // Always allow static/public assets
+  // ✅ API ও preflight একদমই ব্লক করবেন না
+  if (pathname.startsWith("/api") || request.method === "OPTIONS") {
+    return NextResponse.next();
+  }
+
+  // ✅ স্ট্যাটিক/পাবলিক অ্যাসেট সবসময় allow
   if (
     pathname.startsWith("/_next/static") ||
     pathname.startsWith("/_next/image") ||
     pathname.startsWith("/favicon") ||
-    pathname.startsWith("/images") || // serve /public/images/**
-    pathname.startsWith("/assets") || // serve /public/assets/**
-    pathname.startsWith("/icons") || // serve /public/icons/**
+    pathname.startsWith("/images") ||
+    pathname.startsWith("/assets") ||
+    pathname.startsWith("/icons") ||
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml" ||
     pathname.endsWith(".webmanifest") ||
@@ -38,13 +43,21 @@ export function middleware(request: NextRequest) {
 
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
 
+  // ✅ টোকেন নেই এবং প্রাইভেট রুট
   if (!token && !isPublicRoute) {
+    // API নয়, কিন্তু non-GET হলে রিডাইরেক্ট না করে 401 দিন (form/XHR সেফটি)
+    if (request.method !== "GET") {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", pathname);
-    return NextResponse.redirect(url);
+    // ✅ 303 দিলে মেথড GET হয়ে যাবে (307 নয়)
+    return NextResponse.redirect(url, 303);
   }
 
+  // ✅ টোকেন থাকলে পাবলিক পেজে ঢুকতে চাইলে ড্যাশবোর্ডে দিন
   if (token && isPublicRoute) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
@@ -52,9 +65,9 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
+// ✅ matcher-এ /api এক্সক্লুড করুন
 export const config = {
   matcher: [
-    // exclude Next internals and any path that looks like a file (has a dot)
-    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|manifest.webmanifest|.*\\..*).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|manifest.webmanifest|.*\\..*).*)",
   ],
 };
