@@ -1,6 +1,7 @@
 "use client";
 import { ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 
 const MotionDiv = dynamic(
   async () => {
@@ -18,6 +19,7 @@ type Game = {
   provider?: string; // e.g., Evolution, BNG, PG, JILI
   badge?: string; // e.g., "1 Line"
   isFavorite?: boolean;
+  link?: string; // optional link to game
 };
 
 // ---- Demo data (replace with your own) ----
@@ -28,6 +30,7 @@ const demoGames: Game[] = [
     image: "/games/game_1.png",
     provider: "PRAGMATIC PLAY",
     isFavorite: true,
+    link: "/lucky-wheel",
   },
   {
     id: "g2",
@@ -35,18 +38,21 @@ const demoGames: Game[] = [
     image: "/games/game_2.png",
     provider: "Evolution",
     isFavorite: true,
+    link: "/dashboard",
   },
   {
     id: "g3",
     title: "Classic 777",
     image: "/games/game_3.png",
     provider: "BT Gaming",
+    link: "/dashboard",
   },
   {
     id: "g4",
     title: "Aztec Treasures",
     image: "/games/game_4.png",
     provider: "PG",
+    link: "/dashboard",
   },
   {
     id: "g5",
@@ -54,55 +60,60 @@ const demoGames: Game[] = [
     image: "/games/game_5.png",
     provider: "BNG",
     isFavorite: true,
+    link: "/dashboard",
   },
   {
     id: "g6",
     title: "Clover Coins 3x3",
     image: "/games/game_6.png",
     provider: "JILI",
+    badge: "1 Line",
+    link: "/dashboard",
   },
 ];
 
 // ---- Card component ----
 function GameCard({ game }: { game: Game }) {
   return (
-    <MotionDiv
-      whileHover={{ y: -4, scale: 1.02 }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className="relative aspect-[3/4] rounded-2xl overflow-hidden ring-1 ring-white/10 shadow-xl shadow-black/20"
-    >
-      <img
-        src={game.image}
-        alt={game.title}
-        className="absolute inset-0 h-full w-full object-cover"
-        loading="lazy"
-      />
-
-      {/* soft inner gradient to match the reference look */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/40" />
-
-      {/* top-right favorite */}
-      <button
-        aria-label="favorite"
-        className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/90 backdrop-blur text-rose-600 shadow-sm"
+    <Link href={game.link ?? "/dashboard"}>
+      <MotionDiv
+        whileHover={{ y: -4, scale: 1.02 }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        className="relative aspect-[3/4] rounded-2xl overflow-hidden ring-1 ring-white/10 shadow-xl shadow-black/20"
       >
-        <Heart className="h-4 w-4" fill="currentColor" />
-      </button>
+        <img
+          src={game.image}
+          alt={game.title}
+          className="absolute inset-0 h-full w-full object-cover"
+          loading="lazy"
+        />
 
-      {/* top-left small badge (optional) */}
-      {game.badge ? (
-        <div className="absolute left-2 top-2 rounded-md bg-emerald-500 px-2 py-0.5 text-[10px] font-semibold text-emerald-950 shadow">
-          {game.badge}
-        </div>
-      ) : null}
+        {/* soft inner gradient to match the reference look */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/40" />
 
-      {/* provider chip bottom-center */}
-      <div className="absolute inset-x-0 bottom-2 flex justify-center">
-        <div className="rounded-full bg-black/70 px-3 py-1 text-[11px] font-medium text-white/90 backdrop-blur-sm">
-          {game.provider ?? "Provider"}
+        {/* top-right favorite */}
+        <button
+          aria-label="favorite"
+          className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/90 backdrop-blur text-rose-600 shadow-sm"
+        >
+          <Heart className="h-4 w-4" fill="currentColor" />
+        </button>
+
+        {/* top-left small badge (optional) */}
+        {game.badge ? (
+          <div className="absolute left-2 top-2 rounded-md bg-emerald-500 px-2 py-0.5 text-[10px] font-semibold text-emerald-950 shadow">
+            {game.badge}
+          </div>
+        ) : null}
+
+        {/* provider chip bottom-center */}
+        <div className="absolute inset-x-0 bottom-2 flex justify-center">
+          <div className="rounded-full bg-black/70 px-3 py-1 text-[11px] font-medium text-white/90 backdrop-blur-sm">
+            {game.provider ?? "Provider"}
+          </div>
         </div>
-      </div>
-    </MotionDiv>
+      </MotionDiv>
+    </Link>
   );
 }
 

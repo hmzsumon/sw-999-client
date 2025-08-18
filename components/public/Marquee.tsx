@@ -18,7 +18,7 @@ const Marquee = () => {
               <span className="text-red-400 text-[.70rem] mr-1">🎁</span>
             </span>
             <span className="text-white font-semibold text-[.70rem]">
-              TK999 সর্ব্বোচ্চ অফার:
+              🎉🎉 WS999 সর্ব্বোচ্চ অফার:
             </span>
           </div>
         </div>
