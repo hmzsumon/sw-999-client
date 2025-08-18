@@ -10,10 +10,10 @@ import { useRegisterUserMutation } from "@/redux/features/auth/authApi";
 import { fetchBaseQueryError } from "@/redux/services/helpers";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
-import { FaAngleLeft, FaUser } from "react-icons/fa";
+import { FaAngleLeft, FaUser, FaUserFriends } from "react-icons/fa";
 import { MdOutlineMail } from "react-icons/md";
 
 type FormState = {
@@ -37,6 +37,7 @@ export default function RegisterPage() {
 
   const [receivePromo, setReceivePromo] = useState<boolean>(true);
   const [acceptedTerms, setAcceptedTerms] = useState<boolean>(false);
+  const [edit, setEdit] = useState(true);
 
   const [formData, setFormData] = useState<FormState>({
     fullName: "",
@@ -49,6 +50,19 @@ export default function RegisterPage() {
   });
 
   const [formErrors, setFormErrors] = useState<FormErrors>({});
+
+  const searchParams = useSearchParams();
+  const referral_code = searchParams.get("referral_code");
+  console.log("Referral code from URL:", referral_code);
+  useEffect(() => {
+    if (referral_code) {
+      setFormData((prev) => ({
+        ...prev,
+        referralCode: referral_code,
+      }));
+      setEdit(false);
+    }
+  }, [referral_code]);
 
   const gradient = useMemo(
     () => ({
@@ -324,6 +338,27 @@ export default function RegisterPage() {
               </svg>
             }
           />
+
+          {/* Start Referral Option */}
+          <FormInput
+            name="referralCode"
+            type="text"
+            placeholder="Enter Referral Code (optional)"
+            value={formData.referralCode}
+            onChange={(v) => handleChange("referralCode", v)}
+            onBlur={() =>
+              setFormErrors((p) => ({
+                ...p,
+                referralCode: formData.referralCode
+                  ? ""
+                  : "Referral code is optional",
+              }))
+            }
+            error={formErrors.referralCode || ""}
+            icon={<FaUserFriends />}
+            isEdit={edit ? false : true}
+          />
+          {/* End Referral Option */}
           {/* Start Captcha */}
           <div className="relative">
             <div className="from_input flex items-center justify-between px-2 py-1">

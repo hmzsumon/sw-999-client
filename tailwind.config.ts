@@ -21,6 +21,7 @@ const config: Config = {
       colors: {
         "htx-blue": "#0173e5",
         "sw999-light-blue": "#23ffc8",
+        "sw999-yellow": "#ffc403",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {

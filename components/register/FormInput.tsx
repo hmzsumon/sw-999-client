@@ -12,6 +12,7 @@ type Props = {
   error?: string | null;
   icon?: React.ReactNode;
   secureToggle?: boolean;
+  isEdit?: boolean;
 };
 
 export default function FormInput({
@@ -24,6 +25,7 @@ export default function FormInput({
   error,
   icon,
   secureToggle,
+  isEdit,
 }: Props) {
   const [show, setShow] = useState(false);
   const realType = secureToggle ? (show ? "text" : "password") : type;
@@ -36,11 +38,13 @@ export default function FormInput({
           name={name}
           type={realType}
           aria-invalid={!!error}
-          className="flex-1 bg-transparent border-none outline-none text-sm "
+          className="flex-1 bg-transparent border-none outline-none text-sm disabled:cursor-not-allowed disabled:text-gray-500 text-gray-200 placeholder:text-gray-400 focus:ring-0"
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onBlur={onBlur}
+          disabled={isEdit ? true : false}
+          autoComplete="off"
         />
         {secureToggle && (
           <button

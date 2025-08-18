@@ -11,6 +11,7 @@ import SlotIcon from "@/public/icons/slots.png";
 import SportIcon from "@/public/icons/sports.png";
 import VipIcon from "@/public/icons/vip.png";
 import Image from "next/image";
+import Link from "next/link";
 
 export const gameMenuitems = [
   { id: 1, label: "Hot Game", icon: HotIcon, href: "/dashboard" },
@@ -18,7 +19,7 @@ export const gameMenuitems = [
     id: 2,
     label: "Invite friends",
     icon: InviteIcon,
-    href: "/dashboard",
+    href: "/invite-friends",
   },
   { id: 3, label: "Favorites", icon: FavoriteIcon, href: "/dashboard" },
   { id: 4, label: "Promotion", icon: Promotion, href: "/dashboard" },
@@ -46,9 +47,10 @@ export default function SidebarDesktop() {
       <div className=" p-3 bg-[#063b36]">
         <div className="grid grid-cols-2 gap-3">
           {gameMenuitems.map((item) => (
-            <button
-              key={item.id}
-              className="
+            <Link key={item.id} href={item.href} className="w-full">
+              <button
+                key={item.id}
+                className="
                           sidebar_menu_item
                                         shrink-0 
                                         rounded-2xl px-3 py-2
@@ -58,14 +60,15 @@ export default function SidebarDesktop() {
                                         outline-none
                                         w-full
                                         "
-            >
-              <span className="">
-                <Image src={item.icon} alt={item.label} className="w-10 " />
-              </span>
-              <span className="text-[13px] leading-tight font-semibold text-[#9fd6d0]">
-                {item.label}
-              </span>
-            </button>
+              >
+                <span className="">
+                  <Image src={item.icon} alt={item.label} className="w-10 " />
+                </span>
+                <span className="text-[13px] leading-tight font-semibold text-[#9fd6d0]">
+                  {item.label}
+                </span>
+              </button>
+            </Link>
           ))}
         </div>
       </div>
