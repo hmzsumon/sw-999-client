@@ -15,7 +15,6 @@ import depositMethodReducer from "./depositMethodSlice";
 import { apiSlice } from "./features/api/apiSlice";
 import authReducer from "./features/auth/authSlice";
 import miningReducer from "./features/mining/miningSlice";
-import registerReducer from "./features/register/registerSlice";
 import tradeReducer from "./features/trade/tradeSlice";
 import sidebarReducer from "./features/ui/sidebarSlice";
 import resetPassSlice from "./resetPassSlice";
@@ -40,7 +39,6 @@ export const rootReducer = combineReducers({
   verification: verificationSlice,
   trade: tradeReducer,
   sidebar: sidebarReducer,
-  register: registerReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
