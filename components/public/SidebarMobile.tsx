@@ -3,6 +3,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { closeMobileSidebar } from "@/redux/features/ui/sidebarSlice";
 
 import Image from "next/image";
+import Link from "next/link";
 import { IoCloseCircle } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { gameMenuitems } from "./SidebarDesktop";
@@ -44,6 +45,7 @@ const SidebarMobile = () => {
   const isMobileSidebarOpen = useSelector(
     (state: any) => state.sidebar.isMobileSidebarOpen
   );
+
   const dispatch = useDispatch();
   return (
     <>
@@ -69,30 +71,32 @@ const SidebarMobile = () => {
               </div>
               <div className="grid grid-cols-2 gap-3 mt-4">
                 {gameMenuitems.map((item) => (
-                  <button
-                    key={item.id}
-                    className="
-                  sidebar_menu_item
-                                shrink-0 
-                                rounded-2xl px-3 py-2
-                                flex flex-col items-center justify-center text-center
-                                snap-start
-                                transition-transform hover:-translate-y-0.5
-                                outline-none
-                                w-full
-                                "
-                  >
-                    <span className="">
-                      <Image
-                        src={item.icon}
-                        alt={item.label}
-                        className="w-10 "
-                      />
-                    </span>
-                    <span className="text-[13px] leading-tight font-semibold text-[#9fd6d0]">
-                      {item.label}
-                    </span>
-                  </button>
+                  <Link key={item.id} href={item.href} className="w-full">
+                    <button
+                      key={item.id}
+                      className="
+                          sidebar_menu_item
+                                        shrink-0 
+                                        rounded-2xl px-3 py-2
+                                        flex flex-col items-center justify-center text-center
+                                        snap-start
+                                        transition-transform hover:-translate-y-0.5
+                                        outline-none
+                                        w-full
+                                        "
+                    >
+                      <span className="">
+                        <Image
+                          src={item.icon}
+                          alt={item.label}
+                          className="w-10 "
+                        />
+                      </span>
+                      <span className="text-[13px] leading-tight font-semibold text-[#9fd6d0]">
+                        {item.label}
+                      </span>
+                    </button>
+                  </Link>
                 ))}
               </div>
             </div>
