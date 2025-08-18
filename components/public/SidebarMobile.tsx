@@ -3,6 +3,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { closeMobileSidebar } from "@/redux/features/ui/sidebarSlice";
 
 import Image from "next/image";
+import { IoCloseCircle } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { gameMenuitems } from "./SidebarDesktop";
 
@@ -53,15 +54,24 @@ const SidebarMobile = () => {
           onOpenChange={() => dispatch(closeMobileSidebar())}
         >
           <SheetContent
-            side="right"
+            side="left"
             className="w-60
              border-none bg-[#044243]  overflow-y-auto  [&>button]:hidden "
           >
-            <div className="grid grid-cols-2 gap-3">
-              {gameMenuitems.map((item) => (
-                <button
-                  key={item.id}
-                  className="
+            <div>
+              <div className="relative ">
+                <span
+                  className="text-[#9fd6d0] text-lg font-semibold absolute -right-5 -top-9"
+                  onClick={() => dispatch(closeMobileSidebar())}
+                >
+                  <IoCloseCircle className="text-3xl " />
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-3 mt-4">
+                {gameMenuitems.map((item) => (
+                  <button
+                    key={item.id}
+                    className="
                   sidebar_menu_item
                                 shrink-0 
                                 rounded-2xl px-3 py-2
@@ -71,17 +81,21 @@ const SidebarMobile = () => {
                                 outline-none
                                 w-full
                                 "
-                >
-                  <span className="">
-                    <Image src={item.icon} alt={item.label} className="w-10 " />
-                  </span>
-                  <span className="text-[13px] leading-tight font-semibold text-[#9fd6d0]">
-                    {item.label}
-                  </span>
-                </button>
-              ))}
+                  >
+                    <span className="">
+                      <Image
+                        src={item.icon}
+                        alt={item.label}
+                        className="w-10 "
+                      />
+                    </span>
+                    <span className="text-[13px] leading-tight font-semibold text-[#9fd6d0]">
+                      {item.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
-            {/* Logout Button */}
           </SheetContent>
         </Sheet>
       </div>

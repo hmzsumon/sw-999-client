@@ -4,6 +4,7 @@ import CaptchaBox from "@/components/register/CaptchaBox";
 import Checkbox from "@/components/register/Checkbox";
 import FormInput from "@/components/register/FormInput";
 import SocialButton from "@/components/register/SocialButton";
+import Delimiter from "@/components/ui/Delimiter";
 import Logo from "@/public/logo/logo.png";
 import { useRegisterUserMutation } from "@/redux/features/auth/authApi";
 import { fetchBaseQueryError } from "@/redux/services/helpers";
@@ -170,6 +171,7 @@ export default function RegisterPage() {
         <h2 className="text-center text-2xl font-bold text-[#ffc403] mb-1">
           Register
         </h2>
+        <Delimiter width="150px" />
         <p className="text-center text-sm text-[#b8d0cc] mb-5">
           Already have an account?{" "}
           <Link href="/login" className="text-[#00b46f] underline">
@@ -437,6 +439,8 @@ export default function RegisterPage() {
               "Register"
             )}
           </button>
+
+          <Delimiter width="350px" gap="22px" />
 
           <div className="flex items-center justify-center gap-6 pt-2">
             <SocialButton variant="facebook" />

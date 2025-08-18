@@ -1,4 +1,5 @@
 import AuthNavbar from "@/components/auth/AuthNavbar";
+import UserSidebar from "@/components/auth/UserSidebar";
 import SidebarDesktop from "@/components/public/SidebarDesktop";
 import SidebarMobile from "@/components/public/SidebarMobile";
 import React from "react";
@@ -21,6 +22,7 @@ const AuthLayout = ({ children }: Readonly<{ children: React.ReactNode }>) => {
           <div className="col-span-12 md:col-span-10">{children}</div>
         </div>
       </div>
+      <UserSidebar />
     </div>
   );
 };

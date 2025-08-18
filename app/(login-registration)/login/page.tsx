@@ -3,6 +3,7 @@
 import Checkbox from "@/components/register/Checkbox";
 import FormInput from "@/components/register/FormInput";
 import SocialButton from "@/components/register/SocialButton";
+import Delimiter from "@/components/ui/Delimiter";
 import Logo from "@/public/logo/logo.png";
 import { useLoginUserMutation } from "@/redux/features/auth/authApi";
 import { fetchBaseQueryError } from "@/redux/services/helpers";
@@ -133,6 +134,8 @@ export default function LoginPage() {
         <h2 className="text-center text-2xl font-bold text-[#ffc403] mb-1">
           Login
         </h2>
+
+        <Delimiter width="150px" />
         <p className="text-center text-sm text-[#b8d0cc] mb-5">
           No account yet?{" "}
           <Link href="/register" className="text-[#00b46f] underline">
@@ -197,16 +200,23 @@ export default function LoginPage() {
             }
           />
 
-          <Checkbox
-            checked={receivePromo}
-            onChange={setReceivePromo}
-            label={
-              <span className="text-[13px] leading-5 text-[#e6f2ef]">
-                I would like to receive details of special offers, free bets and
-                other promotions.
-              </span>
-            }
-          />
+          <div className="flex items-center justify-between mt-2">
+            <Checkbox
+              checked={receivePromo}
+              onChange={setReceivePromo}
+              label={
+                <span className="text-[13px] leading-5 text-[#e6f2ef]">
+                  Remember
+                </span>
+              }
+            />
+            <Link
+              href="/forgot-password"
+              className="text-[#ffc403] text-sm underline ml-2"
+            >
+              <span>Forgot Password?</span>
+            </Link>
+          </div>
 
           <button
             type="submit"
@@ -244,6 +254,8 @@ export default function LoginPage() {
               "Login"
             )}
           </button>
+
+          <Delimiter width="350px" gap="22px" />
 
           <div className="flex items-center justify-center gap-6 pt-2">
             <SocialButton variant="facebook" />

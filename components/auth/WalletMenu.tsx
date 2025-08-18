@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import React from "react";
 
 const BtnBase: React.CSSProperties = {
@@ -45,15 +46,18 @@ export default function WalletMenu() {
   return (
     <div className="w-full">
       <div className="flex justify-between items-center gap-4 mt-4">
-        <button className=" balance-info w-full rounded-lg flex items-center justify-center gap-2 text-[#ffc403] p-2 font-bold">
-          <DepositIcon />
-          <span className="text-[17px]">Deposit</span>
-        </button>
-
-        <button className=" balance-info w-full rounded-lg flex items-center justify-center gap-2 text-[#ffc403] p-2 font-bold">
-          <WithdrawIcon />
-          <span className="text-[17px]">Withdraw</span>
-        </button>
+        <Link href="/deposit" className="w-full">
+          <button className=" balance-info w-full rounded-lg flex items-center justify-center gap-2 text-[#ffc403] p-2 font-bold">
+            <DepositIcon />
+            <span className="text-[17px]">Deposit</span>
+          </button>
+        </Link>
+        <Link href="/withdraw" className="w-full">
+          <button className=" balance-info w-full rounded-lg flex items-center justify-center gap-2 text-[#ffc403] p-2 font-bold">
+            <WithdrawIcon />
+            <span className="text-[17px]">Withdraw</span>
+          </button>
+        </Link>
       </div>
     </div>
   );

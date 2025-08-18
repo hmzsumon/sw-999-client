@@ -12,12 +12,13 @@ type Props = {
 export default function Checkbox({ checked, onChange, label, error }: Props) {
   return (
     <div>
-      <label className="flex items-start gap-3 cursor-pointer select-none">
+      <label className="flex items-start gap-3 cursor-pointer select-none text-sm">
         <input
           type="checkbox"
           checked={checked}
           onChange={(e) => onChange(e.target.checked)}
-          className="mt-[2px] w-5 h-5 rounded-full border-2 border-[#0e6b5e] bg-[#07383a] accent-[#00b46f] outline-none"
+          className="mt-[2px] w-5 h-5 rounded-full border-2 border-[#0e6b5e] bg-[#07383a] !accent-yellow-400 outline-none"
+          style={{ accentColor: "#f59e0b" }}
         />
         <span>{label}</span>
       </label>
