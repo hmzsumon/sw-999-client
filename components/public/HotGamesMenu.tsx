@@ -38,7 +38,7 @@ const demoGames: Game[] = [
     image: "/games/game_2.png",
     provider: "Evolution",
     isFavorite: true,
-    link: "/dashboard",
+    link: "/fruit-loops",
   },
   {
     id: "g3",
