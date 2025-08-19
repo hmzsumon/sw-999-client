@@ -4,6 +4,7 @@ import { useLuckyWheelContext } from "@/context/luckyWheelContext";
 import { Bitmap, Stage, Text, Ticker } from "@createjs/easeljs";
 import { Ease, Tween } from "@createjs/tweenjs";
 import { useEffect, useRef, useState } from "react";
+import { useSelector } from "react-redux";
 import WinModal from "./WinModal";
 
 // ---------- Types to avoid TS2749 ('Stage' used as a type) ----------
@@ -66,11 +67,17 @@ function pickWeightedIndex(values: number[]): number {
   return values.length - 1;
 }
 
+type RootState = {
+  luckyWheel: { betAmount: number };
+};
+
 export default function LuckyWheel() {
   const { user, updateBalance } = useLuckyWheelContext();
 
+  const betAmount = useSelector((s: RootState) => s.luckyWheel.betAmount);
+
   // UI states
-  const [bet, setBet] = useState<number>(10);
+
   const [isSpinning, setIsSpinning] = useState(false);
   const [isReady, setIsReady] = useState(false);
 
@@ -297,8 +304,8 @@ export default function LuckyWheel() {
     if (!isReady) return;
     if (isSpinning) return;
 
-    if (bet <= 0) return alert("Bet must be greater than 0.");
-    if (user.balance < bet) return alert("Insufficient balance.");
+    if (betAmount <= 0) return alert("Bet must be greater than 0.");
+    if (user.balance < betAmount) return alert("Insufficient balance.");
 
     const pin = pinRef.current;
     if (!pin) return;
@@ -325,7 +332,7 @@ export default function LuckyWheel() {
       }
 
       // Deduct bet when the animation starts
-      updateBalance(-bet);
+      updateBalance(-betAmount);
 
       Tween.get(pin, { override: true })
         .to({ rotation: totalRot }, 8800, Ease.cubicOut)
@@ -333,12 +340,12 @@ export default function LuckyWheel() {
           const reward = rewards2[targetIndex];
           setResult(reward);
 
-          const payout = bet * reward.value;
+          const payout = betAmount * reward.value;
           if (payout > 0) {
             updateBalance(payout);
             setWinAmount(payout);
             setWinMult(reward.value);
-            setWinBet(bet);
+            setWinBet(betAmount);
             setWinOpen(true);
           }
 
