@@ -1,9 +1,8 @@
 "use client";
-import { useLuckyWheelContext } from "@/context/luckyWheelContext";
-import BgBetAmount from "@/public/images/lucky-wheel/bg_betAmount.png";
 import bgFooter from "@/public/images/lucky-wheel/bg_footer.png";
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { FaRegSquareCaretLeft, FaRegSquareCaretRight } from "react-icons/fa6";
+import { useSelector } from "react-redux";
 
 const formatBalance = (amount: number): string => {
   if (amount >= 1_000_000) {
@@ -16,37 +15,11 @@ const formatBalance = (amount: number): string => {
 };
 
 const WheelFooter = () => {
-  const balance = 10.25;
-  const betAmount = 100;
-  const free_spins = 0;
-
-  const { user, updateBalance } = useLuckyWheelContext();
-  console.log("User:", user);
-
-  const [animate, setAnimate] = useState(false);
-  const [isSoundOn, setIsSoundOn] = useState(true);
-
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  const handleSoundToggle = () => {
-    setAnimate(true);
-    setTimeout(() => setAnimate(false), 1500);
-
-    if (audioRef.current) {
-      if (isSoundOn) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.play().catch((err) => {
-          console.warn("Play failed:", err);
-        });
-      }
-    }
-    setIsSoundOn((prev) => !prev);
-  };
+  const { betAmount } = useSelector((state: any) => state.luckyWheel);
 
   return (
     <div className="relative z-50 ">
-      <div className="absolute bottom-0  w-full h-[5vh] ">
+      <div className="absolute bottom-0  w-full h-[10vh] ">
         <Image
           src={bgFooter}
           alt="Lucky Wheel Navbar Background"
@@ -54,22 +27,30 @@ const WheelFooter = () => {
           priority
         />
       </div>
+      <div className="flex items-center justify-center  absolute bottom-0 w-full h-full px-4 -top-8 ">
+        <div className="flex items-center gap-4 ">
+          <div className="">
+            <span className="text-4xl text-yellow-400">
+              <FaRegSquareCaretLeft />
+            </span>
+          </div>
 
-      <div className="absolute -bottom-1 left-[25%] md:left-[18%] sm:top-[25%] md:top-[30%]  lg:left-[18%] lg:top-[30%] text-center">
-        <span className="text-5xl text-yellow-400">-</span>
-      </div>
+          {/*Start Bet Amount box */}
+          <div className="  p-[4px]  rounded-lg bg-[linear-gradient(180deg,#FFE26A_0%,#FF9D00_55%,#FF4B00_100%)] [box-shadow:0_0_8px_rgba(255,184,0,.55),0_0_18px_rgba(255,89,0,.35)]">
+            <div className="py-2 px-4 w-full rounded-[5px]  overflow-visible bg-[linear-gradient(180deg,#2a0153_0%,#3a016a_100%)] ring-1 ring-inset ring-yellow-100/50 [box-shadow:inset_0_0_9px_rgba(255,210,90,.65)] flex items-center">
+              <span className="text-white font-extrabold tracking-widest  ">
+                Bet: ৳ {formatBalance(betAmount)}
+              </span>
+            </div>
+          </div>
+          {/*End Bet Amount box */}
 
-      {/* Bet Amount */}
-      <div className="absolute -bottom-[1%] left-[33%] md:left-[18%] sm:top-[25%] md:top-[30%]  lg:left-[18%] lg:top-[30%] text-center">
-        <Image
-          src={BgBetAmount}
-          alt="Bet Amount Background"
-          className="w-[58%] h-full object-cover"
-        />
-      </div>
-
-      <div className="absolute -bottom-[.12rem] left-[65%] md:left-[18%] sm:top-[25%] md:top-[30%]  lg:left-[18%] lg:top-[30%] text-center">
-        <span className="text-4xl text-yellow-400">+</span>
+          <div className="">
+            <span className="text-4xl text-yellow-400">
+              <FaRegSquareCaretRight />
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );

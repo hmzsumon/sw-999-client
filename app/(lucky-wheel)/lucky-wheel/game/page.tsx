@@ -9,10 +9,8 @@ const LuckyWheel = dynamic(
 
 const LuckyWheelWrapper = () => {
   return (
-    <div className="w-full h-[85vh] relative bg-gray-900 overflow-hidden">
-      <div>
-        <LuckyWheel />
-      </div>
+    <div className="w-full h-[95vh] relative  overflow-hidden">
+      <LuckyWheel />
     </div>
   );
 };

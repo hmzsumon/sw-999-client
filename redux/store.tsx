@@ -14,6 +14,7 @@ import storage from "redux-persist/lib/storage";
 import depositMethodReducer from "./depositMethodSlice";
 import { apiSlice } from "./features/api/apiSlice";
 import authReducer from "./features/auth/authSlice";
+import luckyWheelReducer from "./features/lucky-wheel/luckyWheelSlice";
 import miningReducer from "./features/mining/miningSlice";
 import tradeReducer from "./features/trade/tradeSlice";
 import sidebarReducer from "./features/ui/sidebarSlice";
@@ -39,6 +40,7 @@ export const rootReducer = combineReducers({
   verification: verificationSlice,
   trade: tradeReducer,
   sidebar: sidebarReducer,
+  luckyWheel: luckyWheelReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

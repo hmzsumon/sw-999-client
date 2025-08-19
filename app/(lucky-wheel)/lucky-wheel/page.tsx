@@ -17,7 +17,7 @@ const LuckyWheelPage = () => {
       </div>
 
       {/* 🎯 Start Button */}
-      <div className="absolute right-[30%] top-[15%] lg:right-[45%] flex flex-col items-center justify-center h-full z-20">
+      <div className="absolute right-[20%] top-[15%] lg:right-[45%] flex flex-col items-center justify-center h-full z-20">
         <Link href="/lucky-wheel/game">
           <Image
             src={StartBtn}
@@ -29,7 +29,7 @@ const LuckyWheelPage = () => {
       </div>
 
       {/* 💃 Hot Girl */}
-      <div className="absolute right-[0%] top-[35%] lg:right-[5%] w-[35%] h-full z-20">
+      <div className="absolute right-[0%] top-[38%] lg:right-[5%] w-[35%] h-full z-20">
         <Image
           src={HotGirl}
           alt="Hot Girl"
