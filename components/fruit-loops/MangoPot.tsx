@@ -1,4 +1,5 @@
-import React from "react";
+"use client";
+import React, { useEffect, useMemo, useState } from "react";
 
 type MangoPotProps = {
   pot?: number;
@@ -6,6 +7,13 @@ type MangoPotProps = {
   title?: string;
   multiplier?: number | string;
   className?: string;
+
+  /** set true when Mango wins */
+  isWinner?: boolean;
+  /** change this (e.g. spinId/Date.now()) to retrigger on same result */
+  winKey?: number | string;
+  /** how many 🥭 to emit */
+  emitCount?: number;
 };
 
 const MangoPot: React.FC<MangoPotProps> = ({
@@ -14,13 +22,50 @@ const MangoPot: React.FC<MangoPotProps> = ({
   title = "Mango",
   multiplier = "X 2.9",
   className = "",
+  isWinner = false,
+  winKey,
+  emitCount = 12,
 }) => {
   const fmt = (n: number) => n.toFixed(2);
   const midY = 207; // inner panel middle (113 + 188/2)
 
+  // === timing (easily tweak here) ===
+  const PULSE_MS = 900; // was 600ms → now a bit longer
+  const EMOJI_MS = 1300; // was 1000ms → now a bit longer
+  const CLEAR_AFTER_MS = Math.max(PULSE_MS, EMOJI_MS) + 600; // buffer to clear bursts
+
+  // ====== animation helpers (no design change) ======
+  const idp = useMemo(() => `mg-${Math.random().toString(36).slice(2, 8)}`, []);
+  const [pulseId, setPulseId] = useState(0); // remount + new keyframes each time
+  const [burstIds, setBurstIds] = useState<number[]>([]);
+  const emoji = "🥭";
+  const rand = (min: number, max: number) => Math.random() * (max - min) + min;
+  // start point ~ inner panel center (as % of 272x346 viewBox)
+  const startTopPct = 59.8;
+  const startLeftPct = 50.0;
+
+  const trigger = () => {
+    // 1) ensure panel pulse resets
+    setPulseId((p) => p + 1);
+    // 2) emit emojis
+    const batch = Date.now();
+    const ids = Array.from({ length: emitCount }, (_, i) => batch + i);
+    setBurstIds(ids);
+    // clear after animation completes
+    window.setTimeout(() => setBurstIds([]), CLEAR_AFTER_MS);
+  };
+
+  useEffect(() => {
+    if (isWinner) trigger();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isWinner, winKey, emitCount]);
+
+  // unique animation name per pulse to guarantee restart on all browsers
+  const animName = `mp-panelPulse-${idp}-${pulseId}`;
+
   return (
     <div className={className}>
-      <div className="w-full h-[346px]">
+      <div className="relative w-full h-[346px]">
         <svg
           viewBox="0 0 272 346"
           width="100%"
@@ -171,9 +216,7 @@ const MangoPot: React.FC<MangoPotProps> = ({
           />
 
           {/* ======= TOP SECTION (exact-like) ======= */}
-          {/* pill tag with side caps */}
           <g filter="url(#mp-softShadow)">
-            {/* side round caps */}
             <circle
               cx="72"
               cy="17"
@@ -192,7 +235,6 @@ const MangoPot: React.FC<MangoPotProps> = ({
               strokeOpacity=".35"
               strokeWidth="1"
             />
-            {/* main pill */}
             <rect
               x="72"
               y="-3"
@@ -204,7 +246,6 @@ const MangoPot: React.FC<MangoPotProps> = ({
               strokeOpacity=".45"
               strokeWidth="1"
             />
-            {/* top gloss */}
             <rect
               x="75"
               y="-1"
@@ -214,7 +255,6 @@ const MangoPot: React.FC<MangoPotProps> = ({
               fill="url(#mp-topTagGloss)"
               opacity=".9"
             />
-            {/* label */}
             <text
               x="136"
               y="23"
@@ -229,9 +269,8 @@ const MangoPot: React.FC<MangoPotProps> = ({
             </text>
           </g>
 
-          {/* purple multiplier chip (with soft glow + gloss) */}
+          {/* purple multiplier chip */}
           <g filter="url(#mp-softShadow)">
-            {/* glow behind */}
             <rect
               x="90"
               y="61"
@@ -241,7 +280,6 @@ const MangoPot: React.FC<MangoPotProps> = ({
               fill="#000"
               opacity=".18"
             />
-            {/* chip */}
             <rect
               x="94"
               y="68"
@@ -253,7 +291,6 @@ const MangoPot: React.FC<MangoPotProps> = ({
               strokeOpacity=".35"
               strokeWidth="1"
             />
-            {/* chip top gloss */}
             <rect
               x="97"
               y="70"
@@ -280,7 +317,19 @@ const MangoPot: React.FC<MangoPotProps> = ({
           </g>
 
           {/* ===== inner white content panel ===== */}
-          <g filter="url(#mp-softShadow)">
+          {/* Remounted each pulse via key; animation applied inline so it always restarts */}
+          <g
+            key={pulseId}
+            id={`${idp}-inner-panel`}
+            filter="url(#mp-softShadow)"
+            style={{
+              transformOrigin: "50% 50%",
+              animation:
+                pulseId > 0
+                  ? `${animName} ${PULSE_MS}ms ease-in-out 1`
+                  : undefined,
+            }}
+          >
             <rect
               x="31"
               y="113"
@@ -385,7 +434,6 @@ const MangoPot: React.FC<MangoPotProps> = ({
           </text>
 
           {/* ======= BOTTOM SECTION (exact-like) ======= */}
-          {/* soft ground shadow for bumps */}
           <ellipse
             cx="136"
             cy="346"
@@ -394,12 +442,10 @@ const MangoPot: React.FC<MangoPotProps> = ({
             fill="#000"
             opacity=".22"
           />
-          {/* three bumps */}
           <g>
             <circle cx="88" cy="340" r="18" fill="url(#mp-gMain)" />
             <circle cx="136" cy="342" r="20" fill="url(#mp-gMain)" />
             <circle cx="184" cy="340" r="18" fill="url(#mp-gMain)" />
-            {/* glossy edge arcs */}
             <g opacity=".8" filter="url(#mp-edgeGlow)">
               <path
                 d="M72 328a18 18 0 0 1 32 0"
@@ -423,7 +469,6 @@ const MangoPot: React.FC<MangoPotProps> = ({
                 fill="none"
               />
             </g>
-            {/* subtle top sparkle */}
             <g opacity=".35">
               <circle cx="96" cy="330" r="2" fill="#fff" />
               <circle cx="176" cy="330" r="2" fill="#fff" />
@@ -431,11 +476,83 @@ const MangoPot: React.FC<MangoPotProps> = ({
             </g>
           </g>
 
-          {/* tiny corner sparkles */}
           <circle cx="12" cy="334" r="2" fill="#fff" opacity=".7" />
           <circle cx="260" cy="16" r="3" fill="#fff" opacity=".7" />
         </svg>
+
+        {/* ===== Emoji overlay (flies from panel center to pot) ===== */}
+        <div className="pointer-events-none absolute inset-0 overflow-visible">
+          {burstIds.map((id, i) => {
+            const startJitterX = rand(-6, 6);
+            const startJitterY = rand(-4, 4);
+            const endLeft = 50 + rand(-12, 12); // land near bottom center
+            const endTop = 93 + rand(-3, 2);
+            const delay = i * 30;
+            const size = 18 + rand(-2, 10);
+
+            return (
+              <span
+                key={id}
+                className="absolute emoji-fly"
+                style={
+                  {
+                    left: `${startLeftPct + startJitterX}%`,
+                    top: `${startTopPct + startJitterY}%`,
+                    // @ts-ignore
+                    "--end-left": `${endLeft}%`,
+                    // @ts-ignore
+                    "--end-top": `${endTop}%`,
+                    // @ts-ignore
+                    "--emoji-dur": `${EMOJI_MS}ms`,
+                    animationDelay: `${delay}ms`,
+                    fontSize: `${size}px`,
+                    lineHeight: 1,
+                    transform: "translate(-50%, -50%)",
+                  } as React.CSSProperties
+                }
+              >
+                {emoji}
+              </span>
+            );
+          })}
+        </div>
       </div>
+
+      {/* panel pulse keyframes (dynamic per pulseId) + emoji flight */}
+      <style jsx>{`
+        @keyframes ${animName} {
+          0% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.06);
+          }
+          100% {
+            transform: scale(1);
+          }
+        }
+        @keyframes emojiFlyDown {
+          0% {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.6) rotate(0deg);
+          }
+          12% {
+            opacity: 1;
+          }
+          100% {
+            left: var(--end-left);
+            top: var(--end-top);
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.9) rotate(18deg);
+          }
+        }
+        .emoji-fly {
+          animation: emojiFlyDown var(--emoji-dur, 1200ms)
+            cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+          will-change: left, top, transform, opacity;
+          user-select: none;
+        }
+      `}</style>
     </div>
   );
 };
