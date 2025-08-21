@@ -1,4 +1,6 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+
+type ResultItem = { name: string; emoji: string; slot: number; angle: number };
 
 interface LuckyTimeState {
   isOpen: boolean;
@@ -8,6 +10,11 @@ interface LuckyTimeState {
   maxBetAmount?: number;
   luckyTimeResults?: string[];
   winKey?: string;
+  spinId: number;
+  durationMs: number;
+  forceIndex?: number | null;
+  results: string[];
+  last?: ResultItem | null;
 }
 
 const initialState: LuckyTimeState = {
@@ -18,12 +25,44 @@ const initialState: LuckyTimeState = {
   maxBetAmount: 500, // Example maximum bet amount
   luckyTimeResults: [],
   winKey: undefined, // This can be used to force re-rendering of components when
+  spinId: 0,
+  durationMs: 6000,
+  forceIndex: null,
+  results: [],
+  last: null,
 };
 
 const luckyTimeSlice = createSlice({
   name: "luckyTime",
   initialState,
   reducers: {
+    requestSpin: (
+      state,
+      action: PayloadAction<
+        { durationMs?: number; forceIndex?: number | null } | undefined
+      >
+    ) => {
+      // external caller will dispatch this to start a spin
+      state.spinId += 1;
+      if (action?.payload?.durationMs)
+        state.durationMs = action.payload.durationMs;
+      state.forceIndex =
+        typeof action?.payload?.forceIndex === "number"
+          ? action.payload.forceIndex
+          : null;
+    },
+    spinStarted: (state) => {
+      state.isSpinning = true;
+    },
+    spinFinished: (state, action: PayloadAction<ResultItem>) => {
+      state.isSpinning = false;
+      state.last = action.payload;
+      state.results = [
+        `${action.payload.emoji} ${action.payload.name}`,
+        ...state.results,
+      ];
+    },
+
     openLuckyTime: (state) => {
       state.isOpen = true;
     },
@@ -46,11 +85,13 @@ const luckyTimeSlice = createSlice({
       state.maxBetAmount = action.payload;
     },
 
-    setLuckyTimeResults: (state, action) => {
-      state.luckyTimeResults = action.payload;
-    },
     setWinKey: (state, action) => {
       state.winKey = action.payload;
+    },
+
+    // kept for backward-compat if other parts use it:
+    setLuckyTimeResults: (state, action: PayloadAction<string[]>) => {
+      state.results = action.payload;
     },
   },
 });
@@ -65,6 +106,9 @@ export const {
   setMaxBetAmount,
   setLuckyTimeResults,
   setWinKey,
+  requestSpin,
+  spinStarted,
+  spinFinished,
 } = luckyTimeSlice.actions;
 
 export default luckyTimeSlice.reducer;
