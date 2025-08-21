@@ -1,10 +1,15 @@
 "use client";
+import {
+  setLuckyTimeResults,
+  startSpinning,
+  stopSpinning,
+} from "@/redux/features/lucky-time/luckyTimeSlice";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 const SEGMENTS = 12;
 const STEP = 360 / SEGMENTS;
 
-// ঘড়ির কাঁটার দিকে, টপ থেকে শুরু
 const ANIMALS = [
   "🐯 Tiger",
   "🦁 Lion",
@@ -18,6 +23,71 @@ const ANIMALS = [
   "🐴 Horse",
   "🐻 Bear",
   "🐘 Elephant",
+];
+const boardItems = [
+  {
+    id: 1,
+    multi: "x 200",
+    emoji: "🐯",
+  },
+  {
+    id: 2,
+    multi: "x 300",
+    emoji: "🦁",
+  },
+  {
+    id: 3,
+    multi: "x 50",
+    emoji: "🐆",
+  },
+  {
+    id: 4,
+    multi: "x 2",
+    emoji: "🐖",
+    dig: 90,
+  },
+  {
+    id: 5,
+    multi: "x 2",
+    emoji: "🐄",
+  },
+  {
+    id: 6,
+    multi: "x 2",
+    emoji: "🐒",
+  },
+  {
+    id: 7,
+    multi: "x 10",
+    emoji: "🐺",
+  },
+  {
+    id: 8,
+    multi: "x 5",
+    emoji: "🐰",
+    dig: 210,
+  },
+  {
+    id: 9,
+    multi: "x 3",
+    emoji: "🦊",
+    dig: 240,
+  },
+  {
+    id: 10,
+    multi: "x 50",
+    emoji: "🐴",
+  },
+  {
+    id: 11,
+    multi: "x 100",
+    emoji: "🐻",
+  },
+  {
+    id: 12,
+    multi: "x 500",
+    emoji: "🐘",
+  },
 ];
 
 const newArray = [
@@ -90,23 +160,26 @@ const norm360 = (deg: number) => {
   return d;
 };
 
-// আপনার আর্টে সেগমেন্ট-০ এর **কেন্দ্র** যদি টপে ঠিক না থাকে,
-// এখানে ডিগ্রি দিয়ে ফাইন টিউন করুন (ডানে গেলে +, বামে গেলে -)
-const ASSET_OFFSET_DEG = 0; // প্রয়োজনমতো 0/±15/±30 ইত্যাদি ট্রাই করুন
+const ASSET_OFFSET_DEG = 0;
 
 const EXTRA_ROUNDS = 10; // 5×360°
 
 export default function Wheel() {
-  const [isSpinning, setIsSpinning] = useState(false);
+  const dispatch = useDispatch();
+  // 🔽 Redux state
+  const { isSpinning, spinId, durationMs, forceIndex } = useSelector(
+    (s: any) => s.luckyTime
+  );
+
   const [duration, setDuration] = useState(6000);
   const [result, setResult] = useState<string | null>(null);
   console.log("Result:", result);
-  const [rotationDbg, setRotationDbg] = useState(0); // ডিবাগ দেখার জন্য
+  const [rotationDbg, setRotationDbg] = useState(0);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const stageRef = useRef<any>(null);
-  const wheelRef = useRef<any>(null); // createjs.Bitmap
-  const createjsRef = useRef<any>(null); // module
+  const wheelRef = useRef<any>(null);
+  const createjsRef = useRef<any>(null);
 
   // CreateJS setup
   useEffect(() => {
@@ -171,60 +244,64 @@ export default function Wheel() {
     };
   }, []);
 
-  // যে স্লট পিনের নিচে আছে সেটা গণনা (ফাইনাল রোটেশন থেকে)
   const readSlotFromRotation = (finalRotationDeg: number) => {
-    // পিন টপে, তাই হুইলের টপ-এঙ্গেল = 360 - rotation
     const topAngle = norm360(360 - norm360(finalRotationDeg));
-    // আর্ট ক্যালিব্রেশন সমন্বয় করে নিকটতম স্লট-সেন্টারে রাউন্ড
+
     const slotFloat = norm360(topAngle - ASSET_OFFSET_DEG) / STEP;
     const slot = Math.round(slotFloat) % SEGMENTS;
     return slot;
   };
 
   // স্পিন
-  const spinWheel = useCallback(() => {
-    if (isSpinning) return;
-    const createjs = createjsRef.current;
-    const wheel = wheelRef.current;
-    if (!createjs || !wheel) return;
+  const runSpin = useCallback(
+    (spinDuration: number, forced?: number | null) => {
+      const createjs = createjsRef.current;
+      const wheel = wheelRef.current;
+      if (!createjs || !wheel) return;
 
-    const spinTime = Math.floor(Math.random() * 4000) + 4000; // 4–8s
-    setDuration(spinTime);
-    setIsSpinning(true);
-    setResult(null);
+      dispatch(startSpinning());
 
-    // র‍্যান্ডম স্লট পিক
-    const chosen = Math.floor(Math.random() * SEGMENTS);
+      const chosen =
+        typeof forced === "number" && forced >= 0 && forced < SEGMENTS
+          ? forced
+          : Math.floor(Math.random() * SEGMENTS);
 
-    // টপে আনতে হবে: slotCenter = chosen*STEP + ASSET_OFFSET_DEG
-    const targetTop = norm360(chosen * STEP + ASSET_OFFSET_DEG);
+      const targetTop = norm360(chosen * STEP + ASSET_OFFSET_DEG);
+      const cur = norm360(wheel.rotation);
+      const targetRotMod = norm360(360 - targetTop);
+      const delta = norm360(targetRotMod - cur);
+      const totalRotation = wheel.rotation + EXTRA_ROUNDS * 360 + delta;
 
-    // finalRotation ≡ 360 - targetTop (mod 360)
-    const cur = norm360(wheel.rotation);
-    const targetRotMod = norm360(360 - targetTop);
-    const delta = norm360(targetRotMod - cur);
+      createjs.Tween.get(wheel, { override: true })
+        .to({ rotation: totalRotation }, spinDuration, createjs.Ease.cubicOut)
+        .call(() => {
+          wheel.rotation = norm360(wheel.rotation);
+          setRotationDbg(wheel.rotation);
 
-    const totalRotation = wheel.rotation + EXTRA_ROUNDS * 360 + delta;
+          const slot = readSlotFromRotation(wheel.rotation);
+          const item = newArray[slot];
+          const payload = {
+            slot,
+            name: item?.name ?? "Unknown",
+            emoji: item?.emoji ?? "❓",
+            angle: wheel.rotation,
+          };
 
-    createjs.Tween.get(wheel, { override: true })
-      .to({ rotation: totalRotation }, spinTime, createjs.Ease.cubicOut)
-      .call(() => {
-        // নরমালাইজ
-        wheel.rotation = norm360(wheel.rotation);
-        setRotationDbg(wheel.rotation);
+          // keep legacy result array if other UI uses it
+          dispatch(setLuckyTimeResults([`${payload.emoji} ${payload.name}`]));
+          dispatch(stopSpinning());
+        });
+    },
+    [dispatch]
+  );
+  // 🔁 React to Redux trigger
+  useEffect(() => {
+    if (!spinId) return;
 
-        // ✅ ফাইনাল রোটেশন থেকে স্লট পড়া (এটাই গ্রাউন্ড ট্রুথ)
-        const slot = readSlotFromRotation(wheel.rotation);
+    if (isSpinning) return; // currently spinning; ignore trigger
 
-        const NewResult = newArray.filter(
-          (item) => item.dig === wheel.rotation
-        )[0];
-        setResult(NewResult ? `${NewResult.emoji} ${NewResult.name}` : null);
-
-        setIsSpinning(false);
-      });
-  }, [isSpinning]);
-
+    runSpin(durationMs, forceIndex ?? null);
+  }, [spinId, isSpinning, durationMs, forceIndex, runSpin]);
   return (
     <div className="flex flex-col items-center w-full mx-auto justify-center">
       <div className="relative w-72 h-72">
@@ -258,7 +335,7 @@ export default function Wheel() {
         />
       </div>
 
-      <button
+      {/* <button
         onClick={spinWheel}
         disabled={isSpinning}
         className={`mt-56 px-6 py-2 text-white font-bold rounded-lg shadow-lg ${
@@ -266,20 +343,7 @@ export default function Wheel() {
         }`}
       >
         {isSpinning ? `Spinning...` : "Spin the Wheel"}
-      </button>
-
-      <div className="mt-6 min-h-12 flex items-center justify-center">
-        {result ? (
-          <div className="px-4 py-2 rounded-lg text-xl font-bold bg-yellow-900/40 text-yellow-300">
-            You got: <span className="ml-2">{result}</span>
-          </div>
-        ) : (
-          <div className="text-sm text-white/60">Spin to see the animal!</div>
-        )}
-      </div>
-
-      {/* (ঐচ্ছিক) ছোট ডিবাগ – কোন এঙ্গেলে থামল */}
-      {/* <div className="mt-2 text-xs text-white/50">rot: {rotationDbg.toFixed(2)}°</div> */}
+      </button> */}
     </div>
   );
 }
