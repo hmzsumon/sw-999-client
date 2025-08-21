@@ -9,7 +9,7 @@ export default function BetControlBar() {
     <div
       className="
       fixed left-1/2 -translate-x-1/2 bottom-3 z-50
-      w-[min(100%-16px,1046px)]   /* gutter + max width */
+      w-[min(100%-5px,1046px)]   /* gutter + max width */
       pb-[env(safe-area-inset-bottom)] /* iOS safe area */
     "
     >
@@ -38,7 +38,7 @@ export default function BetControlBar() {
         <div className="flex items-center gap-4 order-2 md:order-1">
           <RulesBtn
             size="md"
-            label="Balance: 0.00"
+            label="BDT:0.00"
             colors={{ start: "#962529", mid: "#831015", end: "#be555c" }}
           />
           <RulesBtn

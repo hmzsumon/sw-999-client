@@ -7,7 +7,6 @@ import RulesBtn from "@/components/fruit-loops/RulesBtn";
 import WatermelonPot from "@/components/fruit-loops/WatermelonPot";
 import Wheel from "@/components/fruit-loops/Wheel";
 import { startSpinning } from "@/redux/features/fruit-loops/fruitLoopsSlice";
-import { Home } from "lucide-react";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -22,18 +21,30 @@ const FruitLoopsPage = () => {
         <Wheel />
       </div>
 
-      <div className="absolute top-[1%] -right-2 p-2">
+      <div className="absolute top-[0%] -right-4 p-2">
         <Link href="/dashboard">
           <CircleIconButton
-            Icon={Home}
-            size={40}
-            iconColor="#d34ad4"
-            colors={{ start: "#ffd77a", mid: "#ffb83e", end: "#f39d0a" }}
+            size={42}
+            icon={
+              <span className="font-extrabold" style={{ fontSize: 22 }}>
+                X
+              </span>
+            }
+            colors={{ start: "#962529", mid: "#831015", end: "#be555c" }}
           />
         </Link>
       </div>
 
-      <div className="absolute top-[15%] md:top-[28%]  flex flex-col items-center justify-center w-full ">
+      <div className="absolute top-[30%] md:top-[80%] md:left-0 w-full flex flex-col items-center z-20 justify-center">
+        <RulesBtn
+          size="lg"
+          label="Spin"
+          colors={{ start: "#962529", mid: "#831015", end: "#be555c" }}
+          onClick={() => dispatch(startSpinning())}
+        />
+      </div>
+
+      <div className="absolute top-[30%] md:top-[30%]  flex flex-col items-center justify-center w-full ">
         <div className=" grid grid-cols-3 gap-1">
           <MangoPot
             pot={95}
@@ -56,16 +67,7 @@ const FruitLoopsPage = () => {
         </div>
       </div>
 
-      <div className="absolute top-[60%] md:top-[80%] md:left-0 w-full flex flex-col items-center z-20 justify-center">
-        <RulesBtn
-          size="lg"
-          label="Spin"
-          colors={{ start: "#962529", mid: "#831015", end: "#be555c" }}
-          onClick={() => dispatch(startSpinning())}
-        />
-      </div>
-
-      <div className="absolute flex  bottom-4  w-full transform md:-translate-x-1/2 md:left-[50%] z-10">
+      <div className="absolute flex  bottom-14  w-full transform md:-translate-x-1/2 md:left-[50%] z-10">
         <BetControlBar />
       </div>
     </div>
