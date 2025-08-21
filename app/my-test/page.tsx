@@ -90,10 +90,10 @@ const MyTestPage = () => {
           size={52}
           icon={
             <span className="font-extrabold" style={{ fontSize: 28 }}>
-              🍎
+              X
             </span>
           }
-          colors={{ start: "#66e3ff", mid: "#2aa7ff", end: "#0a6cff" }}
+          colors={{ start: "#962529", mid: "#831015", end: "#be555c" }}
         />
       </div>
       {/* Start GlassFruitBadge */}
@@ -156,6 +156,17 @@ const MyTestPage = () => {
           textColor="#ffd23a"
           iconColor="#ffd23a"
         />
+
+        <div className="flex items-center justify-center gap-4 m-4">
+          <BarButton
+            size="lg"
+            label="Deposit"
+            Icon={FaPlusCircle}
+            colors={{ start: "#482700", mid: "#3B1F00", end: "#432400" }}
+            textColor="#ffd23a"
+            iconColor="#ffd23a"
+          />
+        </div>
 
         {/* // কাস্টম রঙ + টেইলউইন্ড ring override */}
         <BarButton

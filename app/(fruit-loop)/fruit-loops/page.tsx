@@ -65,7 +65,7 @@ const FruitLoopsPage = () => {
         />
       </div>
 
-      <div className="absolute flex  bottom-0  w-full transform md:-translate-x-1/2 md:left-[50%] z-10">
+      <div className="absolute flex  bottom-4  w-full transform md:-translate-x-1/2 md:left-[50%] z-10">
         <BetControlBar />
       </div>
     </div>
