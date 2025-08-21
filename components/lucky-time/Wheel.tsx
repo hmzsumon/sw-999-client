@@ -1,157 +1,17 @@
 "use client";
 import {
+  ResultItem,
   setLuckyTimeResults,
-  startSpinning,
+  setWinKey,
   stopSpinning,
 } from "@/redux/features/lucky-time/luckyTimeSlice";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { v4 as uuidv4 } from "uuid";
+import { defaultItems } from "./LuckyTimeBoard";
 
 const SEGMENTS = 12;
 const STEP = 360 / SEGMENTS;
-
-const ANIMALS = [
-  "🐯 Tiger",
-  "🦁 Lion",
-  "🐆 Leopard",
-  "🐖 Pig",
-  "🐄 Cow",
-  "🐒 Monkey",
-  "🐺 Wolf",
-  "🐰 Rabbit",
-  "🦊 Fox",
-  "🐴 Horse",
-  "🐻 Bear",
-  "🐘 Elephant",
-];
-const boardItems = [
-  {
-    id: 1,
-    multi: "x 200",
-    emoji: "🐯",
-  },
-  {
-    id: 2,
-    multi: "x 300",
-    emoji: "🦁",
-  },
-  {
-    id: 3,
-    multi: "x 50",
-    emoji: "🐆",
-  },
-  {
-    id: 4,
-    multi: "x 2",
-    emoji: "🐖",
-    dig: 90,
-  },
-  {
-    id: 5,
-    multi: "x 2",
-    emoji: "🐄",
-  },
-  {
-    id: 6,
-    multi: "x 2",
-    emoji: "🐒",
-  },
-  {
-    id: 7,
-    multi: "x 10",
-    emoji: "🐺",
-  },
-  {
-    id: 8,
-    multi: "x 5",
-    emoji: "🐰",
-    dig: 210,
-  },
-  {
-    id: 9,
-    multi: "x 3",
-    emoji: "🦊",
-    dig: 240,
-  },
-  {
-    id: 10,
-    multi: "x 50",
-    emoji: "🐴",
-  },
-  {
-    id: 11,
-    multi: "x 100",
-    emoji: "🐻",
-  },
-  {
-    id: 12,
-    multi: "x 500",
-    emoji: "🐘",
-  },
-];
-
-const newArray = [
-  {
-    name: "Tiger",
-    emoji: "🐯",
-    dig: 0,
-  },
-  {
-    name: "Lion",
-    emoji: "🦁",
-    dig: 30,
-  },
-  {
-    name: "Leopard",
-    emoji: "🐆",
-    dig: 60,
-  },
-  {
-    name: "Pig",
-    emoji: "🐖",
-    dig: 90,
-  },
-  {
-    name: "Cow",
-    emoji: "🐄",
-    dig: 120,
-  },
-  {
-    name: "Monkey",
-    emoji: "🐒",
-    dig: 150,
-  },
-  {
-    name: "Wolf",
-    emoji: "🐺",
-    dig: 180,
-  },
-  {
-    name: "Rabbit",
-    emoji: "🐰",
-    dig: 210,
-  },
-  {
-    name: "Fox",
-    emoji: "🦊",
-    dig: 240,
-  },
-  {
-    name: "Horse",
-    emoji: "🐴",
-    dig: 270,
-  },
-  {
-    name: "Bear",
-    emoji: "🐻",
-    dig: 300,
-  },
-  {
-    name: "Elephant",
-    emoji: "🐘",
-    dig: 330,
-  },
-];
 
 // helpers
 const norm360 = (deg: number) => {
@@ -173,7 +33,6 @@ export default function Wheel() {
 
   const [duration, setDuration] = useState(6000);
   const [result, setResult] = useState<string | null>(null);
-  console.log("Result:", result);
   const [rotationDbg, setRotationDbg] = useState(0);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -252,56 +111,54 @@ export default function Wheel() {
     return slot;
   };
 
-  // স্পিন
-  const runSpin = useCallback(
-    (spinDuration: number, forced?: number | null) => {
-      const createjs = createjsRef.current;
-      const wheel = wheelRef.current;
-      if (!createjs || !wheel) return;
-
-      dispatch(startSpinning());
-
-      const chosen =
-        typeof forced === "number" && forced >= 0 && forced < SEGMENTS
-          ? forced
-          : Math.floor(Math.random() * SEGMENTS);
-
-      const targetTop = norm360(chosen * STEP + ASSET_OFFSET_DEG);
-      const cur = norm360(wheel.rotation);
-      const targetRotMod = norm360(360 - targetTop);
-      const delta = norm360(targetRotMod - cur);
-      const totalRotation = wheel.rotation + EXTRA_ROUNDS * 360 + delta;
-
-      createjs.Tween.get(wheel, { override: true })
-        .to({ rotation: totalRotation }, spinDuration, createjs.Ease.cubicOut)
-        .call(() => {
-          wheel.rotation = norm360(wheel.rotation);
-          setRotationDbg(wheel.rotation);
-
-          const slot = readSlotFromRotation(wheel.rotation);
-          const item = newArray[slot];
-          const payload = {
-            slot,
-            name: item?.name ?? "Unknown",
-            emoji: item?.emoji ?? "❓",
-            angle: wheel.rotation,
-          };
-
-          // keep legacy result array if other UI uses it
-          dispatch(setLuckyTimeResults([`${payload.emoji} ${payload.name}`]));
-          dispatch(stopSpinning());
-        });
-    },
-    [dispatch]
-  );
-  // 🔁 React to Redux trigger
+  // Spin the wheel
   useEffect(() => {
-    if (!spinId) return;
+    if (!isSpinning) return;
+    const createjs = createjsRef.current;
+    const wheel = wheelRef.current;
+    if (!createjs || !wheel) return;
 
-    if (isSpinning) return; // currently spinning; ignore trigger
+    const spinTime = Math.floor(Math.random() * 4000) + 4000; // 4–8s
+    setDuration(spinTime);
+    setResult(null);
 
-    runSpin(durationMs, forceIndex ?? null);
-  }, [spinId, isSpinning, durationMs, forceIndex, runSpin]);
+    const chosen = Math.floor(Math.random() * SEGMENTS);
+
+    // টপে আনতে হবে: slotCenter = chosen*STEP + ASSET_OFFSET_DEG
+    const targetTop = norm360(chosen * STEP + ASSET_OFFSET_DEG);
+
+    // finalRotation ≡ 360 - targetTop (mod 360)
+    const cur = norm360(wheel.rotation);
+    const targetRotMod = norm360(360 - targetTop);
+    const delta = norm360(targetRotMod - cur);
+
+    const totalRotation = wheel.rotation + EXTRA_ROUNDS * 360 + delta;
+
+    createjs.Tween.get(wheel, { override: true })
+      .to({ rotation: totalRotation }, spinTime, createjs.Ease.cubicOut)
+      .call(() => {
+        wheel.rotation = norm360(wheel.rotation);
+        setRotationDbg(wheel.rotation);
+
+        const slot = readSlotFromRotation(wheel.rotation);
+
+        const result = defaultItems.filter(
+          (item) => item.dig === wheel.rotation
+        )[0];
+        const NewResult: ResultItem = {
+          id: result.id,
+          name: result.name ?? "Unknown",
+          emoji: result.emoji, // 0..11
+          angle: norm360(wheel.rotation), // final angle
+          multi: result.multi, // ensure numeric
+        };
+
+        dispatch(setLuckyTimeResults([NewResult]));
+        dispatch(stopSpinning());
+        dispatch(setWinKey(uuidv4()));
+      });
+  }, [isSpinning]);
+
   return (
     <div className="flex flex-col items-center w-full mx-auto justify-center">
       <div className="relative w-72 h-72">
@@ -334,16 +191,6 @@ export default function Wheel() {
           className="absolute top-1/2 left-1/2 w-[33%] -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10"
         />
       </div>
-
-      {/* <button
-        onClick={spinWheel}
-        disabled={isSpinning}
-        className={`mt-56 px-6 py-2 text-white font-bold rounded-lg shadow-lg ${
-          isSpinning ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-700"
-        }`}
-      >
-        {isSpinning ? `Spinning...` : "Spin the Wheel"}
-      </button> */}
     </div>
   );
 }

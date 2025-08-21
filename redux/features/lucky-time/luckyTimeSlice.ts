@@ -1,6 +1,20 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-type ResultItem = { name: string; emoji: string; slot: number; angle: number };
+export type ResultItem = {
+  name: string;
+  emoji: string;
+  angle: number;
+  multi: number;
+  id: number;
+};
+
+export type LuckyTimeResult = {
+  spinId: number;
+  ts: number; // epoch ms
+  item: ResultItem;
+  betAmount: number;
+  winAmount: number; // bet * multi
+};
 
 interface LuckyTimeState {
   isOpen: boolean;
@@ -8,7 +22,7 @@ interface LuckyTimeState {
   betAmount: number;
   minBetAmount?: number;
   maxBetAmount?: number;
-  luckyTimeResults?: string[];
+  luckyTimeResults?: ResultItem[];
   winKey?: string;
   spinId: number;
   durationMs: number;
@@ -90,8 +104,8 @@ const luckyTimeSlice = createSlice({
     },
 
     // kept for backward-compat if other parts use it:
-    setLuckyTimeResults: (state, action: PayloadAction<string[]>) => {
-      state.results = action.payload;
+    setLuckyTimeResults: (state, action: PayloadAction<ResultItem[]>) => {
+      state.luckyTimeResults = action.payload;
     },
   },
 });

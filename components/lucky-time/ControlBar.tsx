@@ -1,6 +1,6 @@
 "use client";
 
-import { requestSpin } from "@/redux/features/lucky-time/luckyTimeSlice";
+import { startSpinning } from "@/redux/features/lucky-time/luckyTimeSlice";
 import { useDispatch, useSelector } from "react-redux";
 
 export default function ControlBar() {
@@ -29,8 +29,7 @@ export default function ControlBar() {
           shadow-[0_0_12px_rgba(34,197,94,.6)]
           hover:bg-green-700 active:scale-[0.97] transition
         "
-        onClick={() => dispatch(requestSpin({ durationMs: 6000 }))} // or {forceIndex: 3}
-        disabled={isSpinning}
+        onClick={() => dispatch(startSpinning())} // Dispatch action to start spinning
       >
         SPIN
       </button>

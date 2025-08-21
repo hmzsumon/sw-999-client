@@ -146,7 +146,7 @@ const Wheel = () => {
 
     const total = wheelRef.current.rotation + EXTRA_ROUNDS * 360 + needed;
 
-    // প্রধান স্পিন + শেষে হালকা wobble
+    // wobble
     createjs.Tween.get(wheelRef.current, { override: true })
       .to({ rotation: total }, spinTime, createjs.Ease.quadOut) // মূল স্পিন
       .to({ rotation: total + WOBBLE_1 }, WOBBLE_STEP, createjs.Ease.quadOut) // ডানে
