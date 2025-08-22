@@ -1,7 +1,9 @@
+import WheelWrapper from "@/components/crazy-lion/WheelWrapper";
+
 const LuckyTimePage = () => {
   return (
     <div>
-      <h2>this Is Lucky Time Page</h2>
+      <WheelWrapper />
     </div>
   );
 };

@@ -1,10 +1,13 @@
+"use client";
 import AuthNavbar from "@/components/auth/AuthNavbar";
 import UserSidebar from "@/components/auth/UserSidebar";
 import SidebarDesktop from "@/components/public/SidebarDesktop";
 import SidebarMobile from "@/components/public/SidebarMobile";
+import { useLoadUserQuery } from "@/redux/features/auth/authApi";
 import React from "react";
 
 const AuthLayout = ({ children }: Readonly<{ children: React.ReactNode }>) => {
+  useLoadUserQuery();
   return (
     <div>
       <div>

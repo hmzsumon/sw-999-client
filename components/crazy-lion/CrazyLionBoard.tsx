@@ -2,8 +2,8 @@
 "use client";
 
 /* ── Imports ─────────────────────────────────────────────────────────────── */
-import type { Boost } from "@/redux/features/lucky-time/luckyTimeSlice";
-import { placeBetOn } from "@/redux/features/lucky-time/luckyTimeSlice";
+
+import { Boost, placeBetOn } from "@/redux/features/crazy-lion/crazyLionSlice";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { SEGMENTS } from "./Wheel";
@@ -27,8 +27,8 @@ type SliceLastResult = {
 /* ── Helpers ────────────────────────────────────────────────────────────── */
 const fmt = (n: number) => n.toLocaleString();
 
-/* ── Component ───────────────────────────────────────────────────────────── */
-export default function LuckyTimeBoard({
+/* ── Component Crazy Lion ───────────────────────────────────────────────────────────── */
+const CrazyLionBoard = ({
   items = SEGMENTS,
   title = "Board",
   resetMs = 2500,
@@ -36,14 +36,14 @@ export default function LuckyTimeBoard({
   items?: BoardItem[];
   title?: string;
   resetMs?: number;
-}) {
+}) => {
   const dispatch = useDispatch();
 
   // Redux pulls
-  const { luckyTimeResults, winKey, activeBoosts, bets } = useSelector(
-    (s: any) => s.luckyTime
+  const { crazyLionResults, winKey, activeBoosts, bets } = useSelector(
+    (s: any) => s.crazyLion
   );
-  const lastWin = luckyTimeResults?.[0] as SliceLastResult | undefined;
+  const lastWin = crazyLionResults?.[0] as SliceLastResult | undefined;
   const winningId = lastWin?.id;
 
   // local selected highlight only
@@ -76,7 +76,7 @@ export default function LuckyTimeBoard({
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [winningId, luckyTimeResults?.length, winKey, resetMs]);
+  }, [winningId, crazyLionResults?.length, winKey, resetMs]);
 
   // Overlay refs (for optional boost chips)
   const overlayRef = useRef<HTMLDivElement | null>(null);
@@ -86,9 +86,9 @@ export default function LuckyTimeBoard({
   const animKey = useMemo(
     () =>
       `${winKey ?? "none"}-${winningId ?? "none"}-${
-        luckyTimeResults?.length ?? 0
+        crazyLionResults?.length ?? 0
       }`,
-    [winKey, winningId, luckyTimeResults?.length]
+    [winKey, winningId, crazyLionResults?.length]
   );
 
   // on tile click → place bet using currently selected chip (slice handles checks)
@@ -370,5 +370,6 @@ export default function LuckyTimeBoard({
       `}</style>
     </div>
   );
-}
+};
 /* ── Exports ────────────────────────────────────────────────────────────── */
+export default CrazyLionBoard;

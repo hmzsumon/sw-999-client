@@ -2,10 +2,11 @@
 "use client";
 
 /* ── Imports ─────────────────────────────────────────────────────────────── */
+
 import {
   usePlaceLucBetMutation,
   useSettleLucBetMutation,
-} from "@/redux/features/lucky-time/luckyTimeApi";
+} from "@/redux/features/crazy-lion/crazyLionApi";
 import {
   clearSpinBoosts,
   ResultItem,
@@ -13,7 +14,7 @@ import {
   settleRound,
   setWinKey,
   startSpinning,
-} from "@/redux/features/lucky-time/luckyTimeSlice";
+} from "@/redux/features/crazy-lion/crazyLionSlice";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { MdLockReset } from "react-icons/md";
@@ -115,7 +116,7 @@ const pickDistinctIds = (n: number, ids: number[]) =>
 export default function Wheel() {
   const dispatch = useDispatch();
   const { isSpinning, totalBet, activeBoosts, balance, bets } = useSelector(
-    (s: RootState) => s.luckyTime
+    (s: RootState) => s.crazyLion
   );
 
   /* ── RTK Query mutations ──────────────────────────────────────────────── */
@@ -360,7 +361,7 @@ export default function Wheel() {
           onClick={() => {
             // note: clearBets reducer refunds the stake to balance
             // import ছাড়াই plain action type দিয়েই ডিসপ্যাচ করা হয়েছে:
-            (dispatch as any)({ type: "luckyTime/clearBets" });
+            (dispatch as any)({ type: "crazyLion/clearBets" });
           }}
         />
 
@@ -374,7 +375,7 @@ export default function Wheel() {
           colors={{ start: "#962529", mid: "#831015", end: "#be555c" }}
           onClick={() => {
             // একই clearBets
-            (dispatch as any)({ type: "luckyTime/clearBets" });
+            (dispatch as any)({ type: "crazyLion/clearBets" });
           }}
         />
 

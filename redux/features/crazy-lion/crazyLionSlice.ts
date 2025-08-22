@@ -10,7 +10,7 @@ export type ResultItem = {
   id: number; // segment id
 };
 
-export type LuckyTimeResult = {
+export type CrazyLionBoardResult = {
   spinId: number;
   ts: number; // epoch ms
   item: ResultItem; // জেতা সেগমেন্ট
@@ -40,7 +40,7 @@ export type Boost = {
    - bets: প্রতি সেগমেন্টে প্লেসড বেট (সময়ের আগেই ব্যালান্স থেকে কাটা)
    - totalBet: সব বেটের সমষ্টি
 ---------------------------------------------------------------------------*/
-interface LuckyTimeState {
+interface CrazyLionState {
   isOpen: boolean;
   isSpinning: boolean;
 
@@ -52,7 +52,7 @@ interface LuckyTimeState {
   minBetAmount?: number;
   maxBetAmount?: number;
 
-  luckyTimeResults?: ResultItem[];
+  crazyLionResults?: ResultItem[];
   winKey?: string;
   spinId: number;
   durationMs: number;
@@ -64,14 +64,14 @@ interface LuckyTimeState {
   activeBoosts: Boost[];
 
   // History (optional)
-  history: LuckyTimeResult[];
+  history: CrazyLionBoardResult[];
 
   // Win pop
   winToast: WinToast;
 }
 
 /* ── Initial State ─────────────────────────────────────────────────────── */
-const initialState: LuckyTimeState = {
+const initialState: CrazyLionState = {
   isOpen: false,
   isSpinning: false,
 
@@ -83,7 +83,7 @@ const initialState: LuckyTimeState = {
   minBetAmount: 1,
   maxBetAmount: 500,
 
-  luckyTimeResults: [],
+  crazyLionResults: [],
   winKey: undefined,
   spinId: 0,
   durationMs: 6000,
@@ -102,15 +102,15 @@ const initialState: LuckyTimeState = {
 const add = (a = 0, b = 0) => a + b;
 
 /* ── Slice ──────────────────────────────────────────────────────────────── */
-const luckyTimeSlice = createSlice({
-  name: "luckyTime",
+const crazyLionSlice = createSlice({
+  name: "crazyLion",
   initialState,
   reducers: {
     /* ── UI open/close ─────────────────────────────────────────────────── */
-    openLuckyTime: (s) => {
+    openCrazyLion: (s) => {
       s.isOpen = true;
     },
-    closeLuckyTime: (s) => {
+    closeCrazyLion: (s) => {
       s.isOpen = false;
     },
 
@@ -179,8 +179,8 @@ const luckyTimeSlice = createSlice({
       s.winKey = a.payload;
     },
 
-    setLuckyTimeResults: (s, a: PayloadAction<ResultItem[]>) => {
-      s.luckyTimeResults = a.payload;
+    setCrazyLionResults: (s, a: PayloadAction<ResultItem[]>) => {
+      s.crazyLionResults = a.payload;
     },
 
     /* ── Win Pop manual controls (optional) ────────────────────────────── */
@@ -211,7 +211,7 @@ const luckyTimeSlice = createSlice({
 
       // Save "last" & list used by UI badges
       s.last = res;
-      s.luckyTimeResults = [res];
+      s.crazyLionResults = [res];
 
       // History push
       s.history.unshift({
@@ -256,8 +256,8 @@ const luckyTimeSlice = createSlice({
 });
 
 export const {
-  openLuckyTime,
-  closeLuckyTime,
+  openCrazyLion,
+  closeCrazyLion,
   setBalance,
   deposit,
   withdraw,
@@ -268,13 +268,13 @@ export const {
   startSpinning,
   stopSpinning,
   setWinKey,
-  setLuckyTimeResults,
+  setCrazyLionResults,
   // NEW:
   openWinPop,
   closeWinPop,
   settleRound,
   setSpinBoosts,
   clearSpinBoosts,
-} = luckyTimeSlice.actions;
+} = crazyLionSlice.actions;
 
-export default luckyTimeSlice.reducer;
+export default crazyLionSlice.reducer;

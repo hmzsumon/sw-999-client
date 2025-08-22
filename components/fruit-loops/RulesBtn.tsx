@@ -11,6 +11,8 @@ type RulesBtnProps = {
   textColor?: string;
   // Optional ring color override (e.g. "#fff8" or "rgba(255,255,255,.35)")
   ringColor?: string;
+  // disabled?: boolean; // future use
+  disabled?: never; // not implemented yet
 };
 
 const SIZES = {
@@ -37,7 +39,7 @@ const RulesBtn: React.FC<RulesBtnProps> = ({
       aria-label={label}
       // Tailwind + inline gradient so color is controllable via props
       className={[
-        "relative inline-flex items-center justify-center",
+        "relative inline-flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed",
         s.h,
         s.px,
         "rounded-full font-extrabold tracking-wide",

@@ -26,16 +26,16 @@ type Game = {
 const demoGames: Game[] = [
   {
     id: "g1",
-    title: "High Flyer",
-    image: "/games/game_1.png",
+    title: "Crazy Lion",
+    image: "/games/crazy_lion.png",
     provider: "PRAGMATIC PLAY",
     isFavorite: true,
-    link: "/lucky-wheel",
+    link: "/crazy-lion",
   },
   {
     id: "g2",
-    title: "Mega Wheel",
-    image: "/games/game_2.png",
+    title: "Fruit Loops",
+    image: "/games/fruit_loops.png",
     provider: "Evolution",
     isFavorite: true,
     link: "/fruit-loops",

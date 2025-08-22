@@ -1,13 +1,14 @@
 "use client";
 
-import { setBalance } from "@/redux/features/lucky-time/luckyTimeSlice";
 import { Wallet } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import CircleIconButton from "../fruit-loops/CircleIconButton";
 import ChipsBar from "./ChipsBar";
-import LuckyTimeBoard from "./LuckyTimeBoard";
+
+import { setBalance } from "@/redux/features/crazy-lion/crazyLionSlice";
+import CrazyLionBoard from "./CrazyLionBoard";
 import Wheel, { RootState } from "./Wheel";
 import WinPop from "./WinPop";
 
@@ -17,14 +18,13 @@ const WheelWrapper = () => {
 
   /* ── server wallet (auth slice) ─────────────────────────────────────────────────────────────── */
   const serverBal = useSelector((s: RootState) => s.auth?.user?.m_balance);
-  console.log("Server balance:", user?.m_balance);
 
   /* ── game state ────────────────────────────────────────────────────────────────────────────── */
   const {
     isSpinning,
     totalBet,
     balance: gameBal,
-  } = useSelector((s: RootState) => s.luckyTime);
+  } = useSelector((s: RootState) => s.crazyLion);
 
   /* ── Sync server balance to game balance (unless spinning or bets placed) ───────────────────── */
   useEffect(() => {
@@ -80,7 +80,7 @@ const WheelWrapper = () => {
       <Wheel />
 
       <div className="mt-4">
-        <LuckyTimeBoard />
+        <CrazyLionBoard />
       </div>
 
       <div className="mt-0">

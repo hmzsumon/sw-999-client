@@ -77,13 +77,10 @@ export const authApi = apiSlice.injectEndpoints({
       },
     }),
 
-    // get user by token._id from cookie
+    /* ────────── Load User ────────── */
     loadUser: builder.query<any, void>({
-      query: () => ({
-        url: "/load-user",
-        method: "GET",
-      }),
-      providesTags: ["User"],
+      query: () => ({ url: "/load-user", method: "GET" }),
+      providesTags: (result) => [{ type: "User" as const, id: "ME" }],
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
           const result = await queryFulfilled;
@@ -156,29 +153,11 @@ export const authApi = apiSlice.injectEndpoints({
       }),
     }),
 
-    // get members by level
-    getMembersByLevel: builder.query<any, string>({
-      query: (level) => `/members-by-level/${level}`,
-    }),
-
-    // get 13 level tree
-    get13LevelTree: builder.query<any, any>({
-      query: () => `/13-level-tree-node`,
-    }),
-
     // find user by email or username
     findUserByEmailOrUsername: builder.mutation<any, any>({
       query: (emailOrUserName) => ({
         url: `/find-user-by-email-username?emailOrUsername=${emailOrUserName}`,
         method: "PUT",
-      }),
-    }),
-
-    // get user by partner id
-    getUserByPartnerId: builder.query<any, any>({
-      query: (partnerId) => ({
-        url: `/get-user-by-partner-id/${partnerId}`,
-        method: "GET",
       }),
     }),
 
@@ -225,38 +204,6 @@ export const authApi = apiSlice.injectEndpoints({
       }),
     }),
 
-    // get 3 level team data
-    get3LevelTeam: builder.query<any, any>({
-      query: () => ({
-        url: `/get-3-level-user`,
-        method: "GET",
-      }),
-    }),
-
-    /// get 5 level team data
-    get5LevelTeam: builder.query<any, any>({
-      query: () => ({
-        url: `/get-5-level-user`,
-        method: "GET",
-      }),
-    }),
-
-    // get my tree node by partner id
-    getTreeNode: builder.query<any, any>({
-      query: (id) => ({
-        url: `/get-tree-node/${id}`,
-        method: "GET",
-      }),
-    }),
-
-    // find descendants
-    findDescendants: builder.query<any, any>({
-      query: () => ({
-        url: `/find-descendants`,
-        method: "GET",
-      }),
-    }),
-
     // get dashboard data
     getDashboard: builder.query<any, any>({
       query: () => ({
@@ -269,15 +216,6 @@ export const authApi = apiSlice.injectEndpoints({
     securityVerify2: builder.mutation<any, any>({
       query: (body) => ({
         url: `/security-verification`,
-        method: "POST",
-        body,
-      }),
-    }),
-
-    // check agent name
-    checkAgentName: builder.mutation<any, any>({
-      query: (body) => ({
-        url: `/check-agent-name`,
         method: "POST",
         body,
       }),
@@ -381,22 +319,18 @@ export const {
   useLoadUserQuery,
   useChangeEmailMutation,
   useVerifyCodeForChangeEmailMutation,
-  useGetMembersByLevelQuery,
-  useGet13LevelTreeQuery,
+
   useFindUserByEmailOrUsernameMutation,
-  useGetUserByPartnerIdQuery,
+
   useCheckEmailExistOrNotMutation,
   useMyAddressQuery,
   useSecurityVerifyMutation,
   useResetPasswordMutation,
   useMyWalletQuery,
-  useGet3LevelTeamQuery,
-  useGet5LevelTeamQuery,
-  useGetTreeNodeQuery,
-  useFindDescendantsQuery,
+
   useGetDashboardQuery,
   useSecurityVerify2Mutation,
-  useCheckAgentNameMutation,
+
   useUpdateMobileNumberMutation,
   useUpdateAddressMutation,
   useCheckOldPasswordMutation,

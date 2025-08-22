@@ -14,6 +14,7 @@ import storage from "redux-persist/lib/storage";
 import depositMethodReducer from "./depositMethodSlice";
 import { apiSlice } from "./features/api/apiSlice";
 import authReducer from "./features/auth/authSlice";
+import crazyLionSlice from "./features/crazy-lion/crazyLionSlice";
 import fruitLoopsReducer from "./features/fruit-loops/fruitLoopsSlice";
 import luckyTimeReducer from "./features/lucky-time/luckyTimeSlice";
 import luckyWheelReducer from "./features/lucky-wheel/luckyWheelSlice";
@@ -45,6 +46,7 @@ export const rootReducer = combineReducers({
   luckyWheel: luckyWheelReducer,
   fruitLoops: fruitLoopsReducer,
   luckyTime: luckyTimeReducer,
+  crazyLion: crazyLionSlice,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

@@ -1,12 +1,13 @@
 "use client";
+import { useLoadUserQuery } from "@/redux/features/auth/authApi";
 import React from "react";
 
-const LuckyTimeLayout = ({
+const CrazyLionLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
-  // useLoadUserQuery();
+  useLoadUserQuery();
   return (
     <div>
       <div className="flex flex-col h-full ">
@@ -18,4 +19,4 @@ const LuckyTimeLayout = ({
   );
 };
 
-export default LuckyTimeLayout;
+export default CrazyLionLayout;

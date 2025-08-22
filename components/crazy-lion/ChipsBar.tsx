@@ -2,7 +2,8 @@
 "use client";
 
 /* ── Imports ─────────────────────────────────────────────────────────────── */
-import { selectChip } from "@/redux/features/lucky-time/luckyTimeSlice";
+
+import { selectChip } from "@/redux/features/crazy-lion/crazyLionSlice";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import BWChip from "../fruit-loops/BWChip";
