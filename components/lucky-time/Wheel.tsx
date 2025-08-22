@@ -2,10 +2,11 @@
 "use client";
 
 /* ── Imports ─────────────────────────────────────────────────────────────── */
+
 import {
   usePlaceLucBetMutation,
   useSettleLucBetMutation,
-} from "@/redux/features/lucky-time/luckyTimeApi";
+} from "@/redux/features/crazy-lion/crazyLionApi";
 import {
   clearSpinBoosts,
   ResultItem,
