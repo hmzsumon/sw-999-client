@@ -23,7 +23,7 @@ type SettleResp = {
 };
 
 /* ── Endpoints ──────────────────────────────────────────────────────────── */
-export const luckyTimeApi = apiSlice.injectEndpoints({
+export const wheelGameApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     placeLucBet: builder.mutation<PlaceBetResp, PlaceBetReq>({
       query: ({ gameKey, bets }) => ({
@@ -44,4 +44,4 @@ export const luckyTimeApi = apiSlice.injectEndpoints({
 });
 
 /* ── Exports ───────────────────────────────────────────────────────────── */
-export const { usePlaceLucBetMutation, useSettleLucBetMutation } = luckyTimeApi;
+export const { usePlaceLucBetMutation, useSettleLucBetMutation } = wheelGameApi;

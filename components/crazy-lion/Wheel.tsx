@@ -4,10 +4,6 @@
 /* ── Imports ─────────────────────────────────────────────────────────────── */
 
 import {
-  usePlaceLucBetMutation,
-  useSettleLucBetMutation,
-} from "@/redux/features/crazy-lion/crazyLionApi";
-import {
   clearSpinBoosts,
   ResultItem,
   setSpinBoosts,
@@ -15,6 +11,10 @@ import {
   setWinKey,
   startSpinning,
 } from "@/redux/features/crazy-lion/crazyLionSlice";
+import {
+  usePlaceLucBetMutation,
+  useSettleLucBetMutation,
+} from "@/redux/features/game/wheelGameApi";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { MdLockReset } from "react-icons/md";
@@ -32,6 +32,8 @@ type BoardItem = {
   emoji: string;
   dig: number;
 };
+
+const GAME_KEY = "crazy-lion";
 
 /* ── SEGMENTS (Equal-EV ভিত্তি; RTP = 1 / Σ(1/multi)) ───────────────────── */
 export const SEGMENTS: BoardItem[] = [
@@ -255,10 +257,6 @@ export default function Wheel() {
         setResultText(
           `Result: ${res.name} ×${res.multi}${b ? ` (boost ×${b.value})` : ""}`
         );
-        console.log(
-          `[RTP≈${(RTP * 100).toFixed(1)}%] sumInv=${S.toFixed(4)} pick=`,
-          res
-        );
 
         // 7) SERVER: settle (roundId + outcome পাঠানো) → তারপর লোকাল settle
         (async () => {
@@ -268,12 +266,10 @@ export default function Wheel() {
               toast.error("No round to settle");
             } else {
               await settleLucBet({
+                gameKey: GAME_KEY,
                 roundId,
-                outcome: {
-                  segmentId: pick.id,
-                  finalMulti,
-                  angle: finalAngle,
-                },
+                winningSegmentId: pick.id,
+                finalMulti,
               }).unwrap();
             }
 
@@ -305,9 +301,20 @@ export default function Wheel() {
       Object.entries(bets || {}).filter(([, amt]) => (amt as number) > 0)
     );
 
+    // build BetInput[] for backend
+    const betArray = Object.entries(bets || {})
+      .filter(([, amt]) => Number(amt) > 0)
+      .map(([segmentId, amount]) => ({
+        segmentId: Number(segmentId),
+        amount: Number(amount),
+      }));
+
     try {
       // 1) SERVER: place-bet (ডেবিট + open round)
-      const resp = await placeLucBet({ bets: payloadBets }).unwrap();
+      const resp = await placeLucBet({
+        gameKey: GAME_KEY,
+        bets: betArray,
+      }).unwrap();
       roundIdRef.current = resp?.roundId;
 
       if (!roundIdRef.current) {

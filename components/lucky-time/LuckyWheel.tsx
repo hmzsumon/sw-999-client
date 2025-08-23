@@ -1,11 +1,12 @@
 // components/lucky-time/Wheel.tsx
 "use client";
 
-/* ── Imports ─────────────────────────────────────────────────────────────── */
 import {
   usePlaceLucBetMutation,
   useSettleLucBetMutation,
-} from "@/redux/features/lucky-time/luckyTimeApi";
+} from "@/redux/features/game/wheelGameApi";
+/* ── Imports ─────────────────────────────────────────────────────────────── */
+
 import {
   clearSpinBoosts,
   ResultItem,
@@ -259,7 +260,10 @@ export default function Wheel() {
         setResultText(
           `Result: ${res.name} ×${res.multi}${b ? ` (boost ×${b.value})` : ""}`
         );
-        // console.log(`[RTP≈${(RTP * 100).toFixed(1)}%] sumInv=${S.toFixed(4)} pick=`, res);
+        // console.log(
+        //   `[RTP≈${(RTP * 100).toFixed(1)}%] sumInv=${S.toFixed(4)} pick=`,
+        //   res
+        // );
 
         // settle on server then update local state
         (async () => {

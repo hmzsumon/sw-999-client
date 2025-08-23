@@ -2,7 +2,7 @@
 "use client";
 
 import { setBalance } from "@/redux/features/lucky-time/luckyTimeSlice";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 /* ── Subcomponent ───────────────────────────────────────────────────────── */
@@ -30,10 +30,17 @@ export default function HeaderStats() {
   
   /* ── Sync server balance to game balance (unless spinning or bets placed) ───────────────────── */
   useEffect(() => {
-    if (typeof serverBal === "number" && !isSpinning && (totalBet ?? 0) === 0) {
+    if (typeof serverBal !== "number") return;
+    if (isSpinning) return;
+    if (serverBal !== balance) {
       dispatch(setBalance(serverBal));
     }
-  }, [serverBal, isSpinning, totalBet, dispatch]);
+  }, [serverBal]);
+
+  const displayTotalBet = useMemo(
+    () => Number(totalBet ?? 0).toLocaleString(),
+    [totalBet]
+  );
 
   return (
     <div className="w-full max-w-4xl mx-auto grid grid-cols-3 gap-2 items-stretch">
