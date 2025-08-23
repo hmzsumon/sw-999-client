@@ -150,7 +150,7 @@ export default function Wheel() {
       stageRef.current = stage;
 
       const img = new Image();
-      img.src = "/images/lucky-time/lucky_time_wheel1.png"; // ❗️12-slice PNG; আর্ট মিল না হলে বদলাও
+      img.src = "/images/crazy-lion/wheel1.png"; // ❗️12-slice PNG; আর্ট মিল না হলে বদলাও
       img.onload = () => {
         if (destroyed) return;
         const bmp = new createjs.Bitmap(img);
@@ -333,17 +333,17 @@ export default function Wheel() {
           className="w-full h-full"
         />
         <img
-          src="/images/lucky-time/frame_3.png"
+          src="/images/crazy-lion/frame_3.png"
           alt="frame"
           className="absolute inset-0 w-full h-full pointer-events-none"
         />
         <img
-          src="/images/lucky-time/pin.png"
+          src="/images/crazy-lion/pin.png"
           alt="pointer"
           className="absolute top-0 left-1/2 -translate-x-1/2 w-10 pointer-events-none z-10"
         />
         <img
-          src="/images/lucky-time/middle_wheel.png"
+          src="/images/crazy-lion/middle_wheel.png"
           alt="middle"
           className="absolute top-1/2 left-1/2 w-[33%] -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10"
         />
