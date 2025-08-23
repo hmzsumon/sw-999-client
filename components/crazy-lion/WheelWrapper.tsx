@@ -69,11 +69,6 @@ const WheelWrapper = () => {
             ৳ {}
             {displayBal.toLocaleString()}
           </span>
-          <span>
-            {showServerHint && (
-              <span className="text-xs text-yellow-300">*server</span>
-            )}
-          </span>
         </div>
       </div>
 
