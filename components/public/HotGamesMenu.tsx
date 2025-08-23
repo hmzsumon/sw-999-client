@@ -43,7 +43,7 @@ const demoGames: Game[] = [
   {
     id: "g3",
     title: "Classic 777",
-    image: "/games/game_3.png",
+    image: "/games/lucky_time.png",
     provider: "BT Gaming",
     link: "/lucky-time",
   },

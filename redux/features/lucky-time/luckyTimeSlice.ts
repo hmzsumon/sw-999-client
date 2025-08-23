@@ -1,53 +1,47 @@
 // redux/features/lucky-time/luckyTimeSlice.ts
+
+/* ── Imports ─────────────────────────────────────────────────────────────── */
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-/* ── Types: ফলাফল/হিস্ট্রি ──────────────────────────────────────────────── */
+/* ── Types ──────────────────────────────────────────────────────────────── */
 export type ResultItem = {
+  id: number;
   name: string;
   emoji: string;
   angle: number;
   multi: number;
-  id: number; // segment id
 };
-
 export type LuckyTimeResult = {
   spinId: number;
-  ts: number; // epoch ms
-  item: ResultItem; // জেতা সেগমেন্ট
-  betAmount: number; // সেই সেগমেন্টে মোট বেট
-  winAmount: number; // bet * multi
+  ts: number;
+  item: ResultItem;
+  betAmount: number;
+  winAmount: number;
 };
-
-// ── Win Pop টোস্ট স্টেট ─────────────────────────────────────────────────
 export type WinToast = {
   open: boolean;
   item: ResultItem | null;
   winAmount: number;
   betAmount: number;
 };
-
-/* ── Types: বুস্ট (যদি Wheel এ থাকে) ──────────────────────────────────── */
 export type Boost = {
   id: string;
   itemId: number;
-  value: number; // 5,10,15,50,80...
+  value: number;
   expiresAt: number;
 };
 
-/* ── State ────────────────────────────────────────────────────────────────
-   - balance: ইউজার ব্যালান্স
-   - selectedChip: বর্তমান চিপ ভ্যালু
-   - bets: প্রতি সেগমেন্টে প্লেসড বেট (সময়ের আগেই ব্যালান্স থেকে কাটা)
-   - totalBet: সব বেটের সমষ্টি
----------------------------------------------------------------------------*/
+/* ── State Shape ────────────────────────────────────────────────────────── */
 interface LuckyTimeState {
   isOpen: boolean;
   isSpinning: boolean;
 
   balance: number;
   selectedChip: number | null;
+
   bets: Record<number, number>;
   totalBet: number;
+  lastBets: Record<number, number>;
 
   minBetAmount?: number;
   maxBetAmount?: number;
@@ -60,13 +54,8 @@ interface LuckyTimeState {
   results: string[];
   last?: ResultItem | null;
 
-  // Boosts (optional visual)
   activeBoosts: Boost[];
-
-  // History (optional)
   history: LuckyTimeResult[];
-
-  // Win pop
   winToast: WinToast;
 }
 
@@ -75,13 +64,15 @@ const initialState: LuckyTimeState = {
   isOpen: false,
   isSpinning: false,
 
-  balance: 0, // demo starting balance
+  balance: 10_000,
   selectedChip: null,
+
   bets: {},
   totalBet: 0,
+  lastBets: {},
 
-  minBetAmount: 1,
-  maxBetAmount: 500,
+  minBetAmount: 10,
+  maxBetAmount: undefined, // undefined => no hard upper limit
 
   luckyTimeResults: [],
   winKey: undefined,
@@ -93,8 +84,6 @@ const initialState: LuckyTimeState = {
 
   activeBoosts: [],
   history: [],
-
-  // Win pop ইনিশিয়াল
   winToast: { open: false, item: null, winAmount: 0, betAmount: 0 },
 };
 
@@ -114,7 +103,7 @@ const luckyTimeSlice = createSlice({
       s.isOpen = false;
     },
 
-    /* ── Balance controls (optional) ───────────────────────────────────── */
+    /* ── Balance Controls ──────────────────────────────────────────────── */
     setBalance: (s, a: PayloadAction<number>) => {
       s.balance = Math.max(0, a.payload | 0);
     },
@@ -125,35 +114,45 @@ const luckyTimeSlice = createSlice({
       s.balance = Math.max(0, s.balance - Math.max(0, a.payload | 0));
     },
 
-    /* ── Chip select ───────────────────────────────────────────────────── */
+    /* ── Chip Selection ────────────────────────────────────────────────── */
     selectChip: (s, a: PayloadAction<number | null>) => {
       s.selectedChip = a.payload ?? null;
     },
 
-    /* ── Place bet on a segment (deducts balance immediately) ────────────
-       - spin চলাকালে বেট নেয় না; ব্যালান্স/লিমিট চেক
-    --------------------------------------------------------------------- */
+    /* ── Betting ───────────────────────────────────────────────────────── */
     placeBetOn: (s, a: PayloadAction<{ itemId: number; amount?: number }>) => {
-      if (s.isSpinning) return; // চলতি স্পিনে ব্লক
+      if (s.isSpinning) return;
       const amt = (a.payload.amount ?? s.selectedChip ?? 0) | 0;
       if (amt <= 0) return;
+      if (typeof s.maxBetAmount === "number" && amt > s.maxBetAmount) return;
       if (s.minBetAmount && amt < s.minBetAmount) return;
-      if (s.maxBetAmount && amt > s.maxBetAmount) return;
       if (s.balance < amt) return;
 
-      s.balance -= amt; // ইমিডিয়েট ডেবিট
+      s.balance -= amt;
       s.bets[a.payload.itemId] = add(s.bets[a.payload.itemId], amt);
       s.totalBet += amt;
     },
 
-    /* ── Clear all bets (refund) ──────────────────────────────────────── */
-    clearBets: (s) => {
-      if (s.totalBet > 0) s.balance += s.totalBet; // সব টাকা রিফান্ড
-      s.bets = {};
-      s.totalBet = 0;
+    /* ── Rebet (repeat last snapshot) ──────────────────────────────────── */
+    rebet: (s) => {
+      if (s.isSpinning) return;
+      const entries = Object.entries(s.lastBets || {});
+      if (!entries.length) return;
+
+      for (const [idStr, amt] of entries) {
+        const id = Number(idStr);
+        if (amt <= 0) continue;
+        if (typeof s.maxBetAmount === "number" && amt > s.maxBetAmount)
+          continue;
+        if (s.balance < amt) continue;
+
+        s.balance -= amt;
+        s.bets[id] = add(s.bets[id], amt);
+        s.totalBet += amt;
+      }
     },
 
-    /* ── Spin flow (compat + gating) ───────────────────────────────────── */
+    /* ── Spin Lifecycle ────────────────────────────────────────────────── */
     requestSpin: (
       s,
       a: PayloadAction<
@@ -168,22 +167,32 @@ const luckyTimeSlice = createSlice({
           : null;
     },
     startSpinning: (s) => {
-      if (s.totalBet > 0) s.isSpinning = true;
+      if (s.totalBet > 0) {
+        s.lastBets = { ...s.bets }; // snapshot for REBET
+        s.isSpinning = true;
+      }
     },
     stopSpinning: (s) => {
       s.isSpinning = false;
     },
 
-    /* ── Win-set (legacy) ─────────────────────────────────────────────── */
+    /* ── Legacy/Display ────────────────────────────────────────────────── */
     setWinKey: (s, a: PayloadAction<string>) => {
       s.winKey = a.payload;
     },
-
     setLuckyTimeResults: (s, a: PayloadAction<ResultItem[]>) => {
       s.luckyTimeResults = a.payload;
     },
 
-    /* ── Win Pop manual controls (optional) ────────────────────────────── */
+    /* ── Clear All Bets (refund) ───────────────────────────────────────── */
+    clearBets: (s) => {
+      if (s.totalBet > 0) s.balance += s.totalBet;
+      s.bets = {};
+      s.totalBet = 0;
+      // keep lastBets for REBET
+    },
+
+    /* ── Win Pop manual controls ───────────────────────────────────────── */
     openWinPop: (
       s,
       a: PayloadAction<{
@@ -196,24 +205,21 @@ const luckyTimeSlice = createSlice({
     },
     closeWinPop: (s) => {
       s.winToast.open = false;
+      s.winToast.item = null;
+      s.winToast.winAmount = 0;
+      s.winToast.betAmount = 0;
     },
 
-    /* ── Settle round: win/loss → balance update, history, clear bets ───
-       - payload: ResultItem (final multi already includes boost if any)
-    --------------------------------------------------------------------- */
+    /* ── Settle Round ─────────────────────────────────────────────────── */
     settleRound: (s, a: PayloadAction<ResultItem>) => {
       const res = a.payload;
       const stake = s.bets[res.id] || 0;
       const winAmount = Math.floor(stake * res.multi);
 
-      // Update balance by winnings (stake already deducted during placeBet)
       if (winAmount > 0) s.balance += winAmount;
 
-      // Save "last" & list used by UI badges
       s.last = res;
       s.luckyTimeResults = [res];
-
-      // History push
       s.history.unshift({
         spinId: s.spinId,
         ts: Date.now(),
@@ -222,30 +228,17 @@ const luckyTimeSlice = createSlice({
         winAmount,
       });
 
-      // ── Win Pop: জিতলে দেখাও, নাহলে বন্ধ ─────────────────────────────
-      if (winAmount > 0) {
-        s.winToast = {
-          open: true,
-          item: res,
-          winAmount,
-          betAmount: stake,
-        };
-      } else {
-        s.winToast.open = false;
-        s.winToast.item = null;
-        s.winToast.winAmount = 0;
-        s.winToast.betAmount = 0;
-      }
+      s.winToast =
+        winAmount > 0
+          ? { open: true, item: res, winAmount, betAmount: stake }
+          : { open: false, item: null, winAmount: 0, betAmount: 0 };
 
-      // Consume bets
       s.bets = {};
       s.totalBet = 0;
-
-      // end spinning
       s.isSpinning = false;
     },
 
-    /* ── Boosts for a spin (optional, visual in Board & payout in Wheel) ─ */
+    /* ── Boosts (optional visuals) ─────────────────────────────────────── */
     setSpinBoosts: (s, a: PayloadAction<Boost[]>) => {
       s.activeBoosts = a.payload;
     },
@@ -255,6 +248,7 @@ const luckyTimeSlice = createSlice({
   },
 });
 
+/* ── Exports ────────────────────────────────────────────────────────────── */
 export const {
   openLuckyTime,
   closeLuckyTime,
@@ -263,15 +257,15 @@ export const {
   withdraw,
   selectChip,
   placeBetOn,
+  rebet,
   clearBets,
   requestSpin,
   startSpinning,
   stopSpinning,
   setWinKey,
   setLuckyTimeResults,
-  // NEW:
-  openWinPop,
-  closeWinPop,
+  openWinPop, // ⬅️ added
+  closeWinPop, // ⬅️ added
   settleRound,
   setSpinBoosts,
   clearSpinBoosts,
