@@ -6,7 +6,7 @@ import type { Boost } from "@/redux/features/lucky-time/luckyTimeSlice";
 import { placeBetOn } from "@/redux/features/lucky-time/luckyTimeSlice";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { SEGMENTS } from "./Wheel";
+import { SEGMENTS } from "./LuckyWheel";
 
 /* ── Types ──────────────────────────────────────────────────────────────── */
 type BoardItem = {
