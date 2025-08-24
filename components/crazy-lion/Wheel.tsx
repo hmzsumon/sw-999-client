@@ -258,7 +258,7 @@ export default function Wheel() {
           `Result: ${res.name} ×${res.multi}${b ? ` (boost ×${b.value})` : ""}`
         );
 
-        // 7) SERVER: settle (roundId + outcome পাঠানো) → তারপর লোকাল settle
+        // 7) সার্ভারে সেটেল + লোকাল স্টেট আপডেট
         (async () => {
           try {
             const roundId = roundIdRef.current;
