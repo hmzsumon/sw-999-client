@@ -32,12 +32,12 @@ type Segment = {
 /* ── Config (keep your artwork & layout) ───────────────────────────────── */
 const GAME_KEY = "fruit-loops-6";
 const SEGMENTS: Segment[] = [
-  { id: 1, angle: 0, result: "Apple", emoji: "🍎", multi: 3 },
-  { id: 2, angle: 60, result: "Watermelon", emoji: "🍉", multi: 3 },
-  { id: 3, angle: 120, result: "Mango", emoji: "🥭", multi: 3 },
-  { id: 4, angle: 180, result: "Apple", emoji: "🍎", multi: 2 },
-  { id: 5, angle: 240, result: "Watermelon", emoji: "🍉", multi: 2 },
-  { id: 6, angle: 300, result: "Mango", emoji: "🥭", multi: 2 },
+  { id: 1, angle: 0, result: "Apple", emoji: "🍎", multi: 2.9 },
+  { id: 2, angle: 60, result: "Watermelon", emoji: "🍉", multi: 2.9 },
+  { id: 3, angle: 120, result: "Mango", emoji: "🥭", multi: 2.9 },
+  { id: 4, angle: 180, result: "Apple", emoji: "🍎", multi: 2.9 },
+  { id: 5, angle: 240, result: "Watermelon", emoji: "🍉", multi: 2.9 },
+  { id: 6, angle: 300, result: "Mango", emoji: "🥭", multi: 2.9 },
 ];
 
 const POINTER_ANGLE = 0;
@@ -171,7 +171,7 @@ export default function FruitLoopsWheel() {
     const needed = neededRaw === 0 ? EPS : neededRaw;
     const total = wheelRef.current.rotation + EXTRA_ROUNDS * 360 + needed;
 
-    if (soundOn) Sound.play("spin", { volume: 0.5 });
+    if (soundOn) Sound.play("spin", { volume: 0.07, loop: true });
 
     createjs.Tween.get(wheelRef.current, { override: true })
       .to({ rotation: total }, spinTime, createjs.Ease.quadOut)

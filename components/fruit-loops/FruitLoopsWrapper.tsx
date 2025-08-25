@@ -101,8 +101,8 @@ export default function FruitLoopsWrapper() {
           <BetPotCard
             seg="apple"
             title="Apple"
-            multiplier="X 3.0"
-            pot={540}
+            multiplier="X 2.9"
+            pot={0}
             topLift={14}
             palette={{
               main: ["#FF9EA6", "#FF6B72", "#E93A44", "#C81E28", "#A7141C"],
@@ -118,7 +118,7 @@ export default function FruitLoopsWrapper() {
             seg="watermelon"
             title="Watermelon"
             multiplier="X 2.9"
-            pot={1234.56}
+            pot={0}
             topLift={16}
             watermark={WM("🍉", "#c8e6c9")}
             isWinner={winnerKey === "watermelon"}
@@ -127,8 +127,8 @@ export default function FruitLoopsWrapper() {
           <BetPotCard
             seg="mango"
             title="Mango"
-            multiplier="X 3.5"
-            pot={987}
+            multiplier="X 2.9"
+            pot={0}
             topLift={10}
             palette={{
               main: ["#FFE59A", "#FFD66E", "#FFC247", "#FFAB1E", "#FF9800"],
