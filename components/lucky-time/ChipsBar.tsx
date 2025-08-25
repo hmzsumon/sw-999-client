@@ -5,7 +5,7 @@
 import { selectChip } from "@/redux/features/lucky-time/luckyTimeSlice";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import BWChip from "../fruit-loops/BWChip";
+import BWChip from "../game-ui/BWChip";
 
 /* ── Config: Chip definitions ────────────────────────────────────────────── */
 const CHIP_SET = [

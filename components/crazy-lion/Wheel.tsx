@@ -20,8 +20,9 @@ import { toast } from "react-hot-toast";
 import { MdLockReset } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { v4 as uuidv4 } from "uuid";
-import CircleIconButton from "../fruit-loops/CircleIconButton";
-import RulesBtn from "../fruit-loops/RulesBtn";
+
+import CircleIconButton from "../game-ui/CircleIconButton";
+import RulesBtn from "../game-ui/RulesBtn";
 
 /* ── Types/Board ────────────────────────────────────────────────────────── */
 export type RootState = any;

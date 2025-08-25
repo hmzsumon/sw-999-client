@@ -1,4 +1,4 @@
-import MangoPot from "./MangoPot";
+import MangoPot from "../game-ui/MangoPot";
 
 const PortBoard = () => {
   return (

@@ -4,7 +4,7 @@ import { Wallet } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import CircleIconButton from "../fruit-loops/CircleIconButton";
+import CircleIconButton from "../game-ui/CircleIconButton";
 import ChipsBar from "./ChipsBar";
 
 import { setBalance } from "@/redux/features/crazy-lion/crazyLionSlice";

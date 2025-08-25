@@ -1,4 +1,4 @@
-import CircleIconButton from "@/components/fruit-loops/CircleIconButton";
+import CircleIconButton from "@/components/game-ui/CircleIconButton";
 import WheelScreen from "@/components/lucky-time/WheelScreen";
 import Link from "next/link";
 
