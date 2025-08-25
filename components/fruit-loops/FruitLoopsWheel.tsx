@@ -171,7 +171,7 @@ export default function FruitLoopsWheel() {
     const needed = neededRaw === 0 ? EPS : neededRaw;
     const total = wheelRef.current.rotation + EXTRA_ROUNDS * 360 + needed;
 
-    if (soundOn) Sound.play("spin", { volume: 0.07, loop: true });
+    if (soundOn) Sound.play("spin", { volume: 0.08 });
 
     createjs.Tween.get(wheelRef.current, { override: true })
       .to({ rotation: total }, spinTime, createjs.Ease.quadOut)
