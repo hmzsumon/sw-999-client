@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
+import GlobalSoundGuard from "./GlobalSoundGuard";
 import StoreProvider from "./StoreProvider";
 
 const geistSans = localFont({
@@ -50,7 +51,10 @@ export default function RootLayout({
       >
         <StoreProvider>
           <SocketProvider>
-            <div className="flex flex-col  bg-wrapper  ">{children}</div>
+            <div className="flex flex-col  bg-wrapper  ">
+              <GlobalSoundGuard />
+              {children}
+            </div>
             <Toaster />
           </SocketProvider>
         </StoreProvider>

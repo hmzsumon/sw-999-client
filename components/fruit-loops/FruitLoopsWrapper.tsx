@@ -4,14 +4,15 @@
 /* ── Imports ───────────────────────────────────────────────────────────── */
 import BetControlBar from "@/components/fruit-loops/BetControlBar";
 import BetPotCard from "@/components/fruit-loops/BetPotCard";
-
 import Wheel from "@/components/fruit-loops/FruitLoopsWheel";
 import FruitWinPop from "@/components/fruit-loops/FruitWinPop";
+import SoundToggleButton from "@/components/fruit-loops/SoundToggleButton";
+import { Sound } from "@/components/fruit-loops/soundManager";
 import { X } from "lucide-react";
 import Link from "next/link";
+import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import CircleIconButton from "../game-ui/CircleIconButton";
-import SoundToggleButton from "./SoundToggleButton";
 
 /* ── Helpers ───────────────────────────────────────────────────────────── */
 function toKey(v: any): string | undefined {
@@ -23,7 +24,6 @@ function toKey(v: any): string | undefined {
       ? v.segKey || v.name || v.result || ""
       : "";
   const s = String(str).toLowerCase();
-  // ইমোজি/অতিরিক্ত ক্যারেক্টার ফিল্টার করে নিন
   if (s.includes("apple")) return "apple";
   if (s.includes("mango")) return "mango";
   if (s.includes("watermelon")) return "watermelon";
@@ -42,18 +42,33 @@ const WM = (emoji: string, tint: string, dx = 80, dy = 150) => (
 
 /* ── Component ─────────────────────────────────────────────────────────── */
 export default function FruitLoopsWrapper() {
-  /* ── Store ──────────────────────────────────────────────────────────── */
-  const { fruitLoopsResults, winKey, spinId } = useSelector(
+  const { fruitLoopsResults, winKey, spinId, soundOn } = useSelector(
     (s: any) => s.fruitLoops
   );
 
   const last = Array.isArray(fruitLoopsResults)
     ? fruitLoopsResults[0]
     : fruitLoopsResults;
-  const winnerKey = toKey(last); // "apple" | "mango" | "watermelon"
-  const animKey = winKey ?? spinId; // অ্যানিম রি-ট্রিগার
+  const winnerKey = toKey(last);
+  const animKey = winKey ?? spinId;
 
-  /* ── Render ─────────────────────────────────────────────────────────── */
+  /* ── BG: প্রথম জেসচার-এ স্টার্ট ─────────────────────────────────────── */
+  useEffect(() => {
+    if (!soundOn) {
+      Sound.stopBG();
+      return;
+    }
+    const start = () => Sound.startBG();
+    window.addEventListener("pointerdown", start, { once: true });
+    window.addEventListener("keydown", start, { once: true });
+    window.addEventListener("touchstart", start, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", start);
+      window.removeEventListener("keydown", start);
+      window.removeEventListener("touchstart", start);
+    };
+  }, [soundOn]);
+
   return (
     <div className="flex flex-col items-center justify-center relative h-full">
       {/* Wheel background: ক্লিক ব্লক না করার জন্য */}
@@ -63,7 +78,6 @@ export default function FruitLoopsWrapper() {
 
       {/* Top-right controls (Sound + Close) */}
       <div className="absolute top-[0%] -right-4 p-2 z-30 ">
-        {/* Close */}
         <Link href="/dashboard">
           <CircleIconButton
             size={42}
@@ -78,15 +92,12 @@ export default function FruitLoopsWrapper() {
       </div>
 
       <div className="absolute top-[0%] -left-4 p-2 z-30 ">
-        {/* Sound */}
         <SoundToggleButton />
       </div>
-      {/* ✅ Sound toggle */}
 
       {/* Pots */}
       <div className="absolute top-[15%] md:top-[30%] flex flex-col items-center justify-center w-full z-20">
         <div className="grid grid-cols-3 gap-1">
-          {/* Apple */}
           <BetPotCard
             seg="apple"
             title="Apple"
@@ -103,8 +114,6 @@ export default function FruitLoopsWrapper() {
             isWinner={winnerKey === "apple"}
             winKey={animKey}
           />
-
-          {/* Watermelon (default green) */}
           <BetPotCard
             seg="watermelon"
             title="Watermelon"
@@ -115,8 +124,6 @@ export default function FruitLoopsWrapper() {
             isWinner={winnerKey === "watermelon"}
             winKey={animKey}
           />
-
-          {/* Mango */}
           <BetPotCard
             seg="mango"
             title="Mango"

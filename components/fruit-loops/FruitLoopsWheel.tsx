@@ -2,10 +2,6 @@
 "use client";
 
 /* ── Imports ───────────────────────────────────────────────────────────── */
-import { useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { v4 as uuidv4 } from "uuid";
-
 import {
   setFruitLoopsResults,
   setWinKey,
@@ -14,12 +10,13 @@ import {
   stopSpinning,
   type ResultItem,
 } from "@/redux/features/fruit-loops/fruitLoopsSlice";
-
 import {
   usePlaceLucBetMutation,
   useSettleLucBetMutation,
 } from "@/redux/features/game/wheelGameApi";
-import toast from "react-hot-toast";
+import { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { v4 as uuidv4 } from "uuid";
 import { Sound } from "./soundManager";
 
 /* ── Types ─────────────────────────────────────────────────────────────── */
@@ -43,17 +40,17 @@ const SEGMENTS: Segment[] = [
   { id: 6, angle: 300, result: "Mango", emoji: "🥭", multi: 2 },
 ];
 
-// pointer points “up”; your wheel PNG is offset ~60deg clockwise → compensate:
 const POINTER_ANGLE = 0;
-const ASSET_OFFSET = -60; // keep your previous offset
+const ASSET_OFFSET = -60;
 const EPS = 0.001;
 const EXTRA_ROUNDS = 10;
 const MIN_SPIN_MS = 8000;
 const EXTRA_SPIN_MS = 5000;
+const LOSE_DELAY_MS = 350;
 
 const norm360 = (v: number) => ((v % 360) + 360) % 360;
 
-/* ── Timing / Easing ────────────────────────────────────────────────────── */
+/* ── Ending wobble steps ──────────────────────────────────────────────── */
 const WOBBLE_1 = 12,
   WOBBLE_2 = 8,
   WOBBLE_3 = 5,
@@ -62,24 +59,16 @@ const WOBBLE_1 = 12,
 
 /* ── Component ─────────────────────────────────────────────────────────── */
 export default function FruitLoopsWheel() {
-  /* ── State ───────────────────────────────────────────────────────────── */
   const dispatch = useDispatch();
   const { isSpinning, spinId, bets, totalBet, soundOn } = useSelector(
     (s: RootState) => s.fruitLoops
   );
 
-  const [resultText, setResultText] = useState("");
-  console.log("ResultText:", resultText);
-
-  /* ── RTK Query mutations ──────────────────────────────────────────────── */
   const [placeLucBet] = usePlaceLucBetMutation();
   const [settleLucBet] = useSettleLucBetMutation();
 
-  // ✅ alias to match the call-sites below
-  const placeBet = placeLucBet;
-  const settleBet = settleLucBet;
+  const [resultText, setResultText] = useState("");
 
-  /* ── CreateJS / Stage refs ───────────────────────────────────────────── */
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const stageRef = useRef<any>(null);
   const wheelRef = useRef<any>(null);
@@ -103,13 +92,12 @@ export default function FruitLoopsWheel() {
       stageRef.current = stage;
 
       const img = new Image();
-      img.src = "/images/fruit-loops/wheel_1.png"; // ← your wheel sprite
+      img.src = "/images/fruit-loops/wheel_1.png";
       img.onload = () => {
         if (destroyed) return;
         const bmp = new createjs.Bitmap(img);
         bmp.regX = img.width / 2;
         bmp.regY = img.height / 2;
-
         const scale = Math.min(
           canvas.width / img.width,
           canvas.height / img.height
@@ -119,13 +107,11 @@ export default function FruitLoopsWheel() {
         bmp.x = canvas.width / 2;
         bmp.y = canvas.height / 2;
         bmp.rotation = 0;
-
         wheelRef.current = bmp;
         stage.addChild(bmp);
         stage.update();
       };
 
-      // 60fps ticker
       createjs.Ticker.framerate = 60;
       const tick = () => stage.update();
       createjs.Ticker.addEventListener("tick", tick);
@@ -149,29 +135,21 @@ export default function FruitLoopsWheel() {
     if (totalBet <= 0) return;
 
     (async () => {
-      // build array-of-objects for backend: [{segmentId, amount}, ...]
       const betArray = Object.entries(bets || {})
         .filter(([, amt]) => Number(amt) > 0)
         .map(([segmentId, amount]) => ({
           segmentId: Number(segmentId),
           amount: Number(amount),
         }));
+      if (!betArray.length) return;
 
-      if (betArray.length === 0) return;
-
-      const resp = await placeBet({
+      const resp = await placeLucBet({
         gameKey: GAME_KEY,
         bets: betArray,
       }).unwrap();
       roundIdRef.current = resp?.roundId || null;
-
-      if (roundIdRef.current) {
-        // only after server accepted the bet:
-        dispatch(startSpinning());
-      }
-    })().catch(() => {
-      // keep UI calm on network error; do not start spinning
-    });
+      if (roundIdRef.current) dispatch(startSpinning());
+    })().catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spinId]);
 
@@ -193,27 +171,20 @@ export default function FruitLoopsWheel() {
     const needed = neededRaw === 0 ? EPS : neededRaw;
     const total = wheelRef.current.rotation + EXTRA_ROUNDS * 360 + needed;
 
-    // ✅ স্পিন সাউন্ড অন
-    if (soundOn) Sound.play("spin", { volume: 0.8, loop: false });
+    if (soundOn) Sound.play("spin", { volume: 0.5 });
 
-    /* ── Continuous spin + end wobble ──────────────────────────────────── */
     createjs.Tween.get(wheelRef.current, { override: true })
-      .to({ rotation: total }, spinTime, createjs.Ease.quadOut) // একটানা স্মুথ
-      // শেষে হেলে-দুলে থামা
+      .to({ rotation: total }, spinTime, createjs.Ease.quadOut)
       .to({ rotation: total + WOBBLE_1 }, WOBBLE_STEP, createjs.Ease.quadOut)
       .to({ rotation: total - WOBBLE_2 }, WOBBLE_STEP, createjs.Ease.quadInOut)
       .to({ rotation: total + WOBBLE_3 }, WOBBLE_STEP, createjs.Ease.quadInOut)
       .to({ rotation: total - WOBBLE_4 }, WOBBLE_STEP, createjs.Ease.quadInOut)
       .to({ rotation: total }, WOBBLE_STEP, createjs.Ease.quadOut)
       .call(() => {
-        // normalize to 0..359
         if (wheelRef.current)
           wheelRef.current.rotation = norm360(wheelRef.current.rotation);
-
-        // ✅ স্পিন সাউন্ড স্টপ
         Sound.stop("spin");
 
-        // Build ResultItem with emoji+multi so reducer can compute payout & fire WinPop
         const res: ResultItem = {
           id: pick.id,
           name: pick.result,
@@ -223,73 +194,40 @@ export default function FruitLoopsWheel() {
         };
         setResultText(`Result: ${res.name} ×${res.multi}`);
 
-        // 6 slices → 3 betting pots (Apple: 1/4 → 1, Watermelon: 2/5 → 2, Mango: 3/6 → 3)
+        // 6 slices → 3 betting pots (1/4→1, 2/5→2, 3/6→3)
         const winPotId = ((pick.id - 1) % 3) + 1;
 
-        // server settle (authoritative); send finalMulti so BE & FE match
+        const stakeHere = Number((bets as any)?.[String(winPotId)]) || 0;
+        const isLoss = Math.floor(stakeHere * pick.multi) <= 0;
+
         (async () => {
           try {
             const rId = roundIdRef.current;
             if (rId) {
-              await settleBet({
+              await settleLucBet({
                 gameKey: GAME_KEY,
                 roundId: rId,
                 winningSegmentId: pick.id,
                 finalMulti: pick.multi,
               }).unwrap();
             }
-            // trigger pot animations & win pop
-            dispatch(setFruitLoopsResults([res])); // recentResults log
-            dispatch(settleRound({ potId: winPotId, multi: res.multi })); // correct pot id
-            dispatch(setWinKey(uuidv4())); // retrigger pot animation
+            dispatch(setFruitLoopsResults([res]));
+            dispatch(settleRound({ potId: winPotId, multi: res.multi }));
+            dispatch(setWinKey(uuidv4()));
             roundIdRef.current = null;
           } catch {
-            // settle failed → stop spin gracefully; reducer won't apply win
+            // ignore
           } finally {
             dispatch(stopSpinning());
+            if (soundOn && isLoss)
+              setTimeout(() => Sound.play("lose"), LOSE_DELAY_MS);
           }
         })();
       });
 
-    // cleanup safety
     return () => Sound.stop("spin");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSpinning]);
-
-  /* ── Actions: Spin / Guard no-bet ─────────────────────────────────────── */
-  const onSpin = async () => {
-    if (totalBet <= 0) {
-      toast.error("Place a bet first!");
-      setResultText("Place a bet first!");
-      return;
-    }
-
-    const betArray = Object.entries(bets || {})
-      .filter(([, amt]) => Number(amt) > 0)
-      .map(([segmentId, amount]) => ({
-        segmentId: Number(segmentId),
-        amount: Number(amount),
-      }));
-
-    try {
-      // 1) SERVER: place-bet (ডেবিট + open round)
-      const resp = await placeLucBet({
-        gameKey: GAME_KEY,
-        bets: betArray,
-      }).unwrap();
-      roundIdRef.current = resp?.roundId;
-
-      if (!roundIdRef.current) {
-        toast.error("Failed to open round");
-        return;
-      }
-
-      // 2) এখন স্পিন শুরু
-      dispatch(startSpinning());
-    } catch (e: any) {
-      toast.error(e?.data?.message ?? "Bet failed");
-    }
-  };
 
   /* ── Render (kept your UI) ───────────────────────────────────────────── */
   return (

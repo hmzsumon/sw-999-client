@@ -18,7 +18,6 @@ const CrazyLionLayout = ({
   // List the assets you want to preload
   const assets = useMemo(
     () => [
-      "/images/crazy-lion/bg.png",
       "/images/crazy-lion/wheel1.png",
       "/images/crazy-lion/frame_3.png",
       "/images/crazy-lion/pin.png",

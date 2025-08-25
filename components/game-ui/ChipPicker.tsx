@@ -1,17 +1,38 @@
-import { useState } from "react";
-import BWChip from "./BWChip";
+// components/fruit-loops/ChipPicker.tsx
+"use client";
 
+/* ── Imports ───────────────────────────────────────────────────────────── */
+import { selectChip } from "@/redux/features/fruit-loops/fruitLoopsSlice";
+import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Sound } from "../fruit-loops/soundManager";
+import BWChip from "../game-ui/BWChip";
+
+/* ── Component ─────────────────────────────────────────────────────────── */
 export default function ChipPicker() {
+  const dispatch = useDispatch();
+  const reduxSelected = useSelector((s: any) => s.fruitLoops.selectedChip);
+  const soundOn = useSelector((s: any) => s.fruitLoops.soundOn);
+
   const chips = [
     { amount: 10, baseColor: "#191919", faceColor: "#111827" },
     { amount: 50, baseColor: "#2563EB", faceColor: "#1D4ED8" },
     { amount: 100, baseColor: "#EF4444", faceColor: "#DC2626" },
+    { amount: 500, baseColor: "#22C55E", faceColor: "#16A34A" },
   ];
 
-  const [selected, setSelected] = useState<number>(chips[0].amount);
+  const [selected, setSelected] = useState<number>(
+    reduxSelected ?? chips[0].amount
+  );
+
+  const onPick = (amt: number) => {
+    setSelected(amt);
+    dispatch(selectChip(amt));
+    if (soundOn) Sound.play("chipSelect");
+  };
 
   return (
-    <div className="grid grid-cols-3 gap-2 place-items-center">
+    <div className="grid grid-cols-4 gap-2 place-items-center">
       {chips.map((c) => (
         <BWChip
           key={c.amount}
@@ -20,12 +41,13 @@ export default function ChipPicker() {
           stripeColor="#fff"
           textColor="#fff"
           selected={selected === c.amount}
-          selectedScale={1.08} // হালকা বড় হবে
-          animate="pulse" // pulse | breathe | none
-          glowColor="rgba(59,130,246,.55)" // সিলেক্টেড গ্লো
-          onClick={() => setSelected(c.amount)}
+          selectedScale={1.08}
+          animate="pulse"
+          glowColor="rgba(59,130,246,.55)"
+          onClick={() => onPick(c.amount)}
         />
       ))}
     </div>
   );
 }
+/* ── End Component ─────────────────────────────────────────────────────── */

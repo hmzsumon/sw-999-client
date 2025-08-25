@@ -31,63 +31,45 @@ const titleToEmoji = (t: string) =>
 
 /* ── Component ─────────────────────────────────────────────────────────── */
 export default function FruitWinPop() {
-  /* ── Store ──────────────────────────────────────────────────────────── */
   const dispatch = useDispatch();
   const { winToast, fruitLoopsResults, winKey, soundOn } = useSelector(
     (s: any) => s.fruitLoops || {}
   );
-
   const open = !!winToast?.open;
   const potId = winToast?.potId;
   const winAmount = Number(winToast?.winAmount || 0);
 
-  // ফল/ইমোজি resolve
   const lastRes = Array.isArray(fruitLoopsResults)
     ? fruitLoopsResults[0]
     : fruitLoopsResults;
-
   const fruitKey =
     (lastRes?.name && potId && potIdToKey(potId)) || potIdToKey(potId || 2);
-
   const emoji =
     lastRes?.emoji ||
     titleToEmoji(String(lastRes?.name || fruitKey).toLowerCase());
-
   const pal =
     PALETTES[fruitKey as keyof typeof PALETTES] || PALETTES.watermelon;
 
-  /* ── Local: coin blast ──────────────────────────────────────────────── */
   const [blastIds, setBlastIds] = useState<number[]>([]);
 
   useEffect(() => {
     if (!open) return;
-
-    // ✅ জিতলেই সাউন্ড: big (multi ≥ 3) না হলে সাধারণ win
-    if (soundOn) {
-      const big = Number(lastRes?.multi || 0) >= 3;
-      Sound.play(big ? "big" : "win");
-    }
-
+    if (soundOn) Sound.play("win"); // ✅ always play win sound
     const batch = Date.now();
     setBlastIds(Array.from({ length: 34 }, (_, i) => batch + i));
-
     const t = setTimeout(() => dispatch(closeWinPop()), 2600);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, winKey]);
+  }, [open, winKey, soundOn]);
 
   if (!open) return null;
 
-  /* ── Render ─────────────────────────────────────────────────────────── */
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center">
-      {/* Overlay (click to close) */}
       <div
         className="absolute inset-0 bg-black/40"
         onClick={() => dispatch(closeWinPop())}
       />
-
-      {/* Popup card */}
       <div className="relative z-10 w-[90%] max-w-[420px]">
         <div
           className="relative rounded-3xl p-5 shadow-2xl overflow-hidden"
@@ -96,7 +78,6 @@ export default function FruitWinPop() {
             border: "2px solid rgba(255,255,255,.35)",
           }}
         >
-          {/* Top gloss */}
           <div
             className="absolute left-0 right-0 h-24 top-0"
             style={{
@@ -104,8 +85,6 @@ export default function FruitWinPop() {
                 "linear-gradient(180deg, rgba(255,255,255,.42), rgba(255,255,255,0))",
             }}
           />
-
-          {/* Emoji dance */}
           <div className="relative flex flex-col items-center text-center">
             <div
               className="select-none"
@@ -118,7 +97,6 @@ export default function FruitWinPop() {
             >
               {emoji}
             </div>
-
             <div
               className="mt-1 font-extrabold"
               style={{
@@ -131,18 +109,12 @@ export default function FruitWinPop() {
             >
               YOU WIN!
             </div>
-
             <div
               className="mt-1 font-semibold"
-              style={{
-                color: pal.text,
-                fontSize: 16,
-                opacity: 0.92,
-              }}
+              style={{ color: pal.text, fontSize: 16, opacity: 0.92 }}
             >
               {fruitKey.toUpperCase()}
             </div>
-
             <div
               className="mt-3 px-4 py-2 rounded-full font-black"
               style={{
@@ -194,7 +166,6 @@ export default function FruitWinPop() {
             })}
           </div>
 
-          {/* Close hint */}
           <div
             className="absolute right-3 top-2 text-white/80 text-xs"
             style={{ textShadow: "0 1px 3px rgba(0, 0, 0, .5)" }}

@@ -3,7 +3,7 @@ import MangoPot from "../game-ui/MangoPot";
 const PortBoard = () => {
   return (
     <div>
-      <MangoPot />
+      <MangoPot segKey="defaultSegKey" />
     </div>
   );
 };

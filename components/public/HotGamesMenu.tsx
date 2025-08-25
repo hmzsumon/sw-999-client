@@ -19,7 +19,7 @@ type Game = {
   provider?: string; // e.g., Evolution, BNG, PG, JILI
   badge?: string; // e.g., "1 Line"
   isFavorite?: boolean;
-  link?: string; // optional link to game
+  link: string; // optional link to game
 };
 
 // ---- Demo data (replace with your own) ----
@@ -52,7 +52,7 @@ const demoGames: Game[] = [
     title: "Aztec Treasures",
     image: "/games/game_4.png",
     provider: "PG",
-    link: "/dashboard",
+    link: "/casino-games",
   },
   {
     id: "g5",
@@ -60,7 +60,7 @@ const demoGames: Game[] = [
     image: "/games/game_5.png",
     provider: "BNG",
     isFavorite: true,
-    link: "/dashboard",
+    link: "/casino-games",
   },
   {
     id: "g6",
@@ -68,14 +68,101 @@ const demoGames: Game[] = [
     image: "/games/game_6.png",
     provider: "JILI",
     badge: "1 Line",
-    link: "/dashboard",
+    link: "/casino-games",
+  },
+  {
+    id: "g7",
+    title: "Diamond Wild",
+    image: "/games/game_7.png",
+    provider: "Evolution",
+    link: "/casino-games",
+  },
+  {
+    id: "g8",
+    title: "Dragon Tiger",
+    image: "/games/game_8.png",
+    provider: "Evolution",
+    isFavorite: true,
+    link: "/casino-games",
+  },
+  {
+    id: "g9",
+    title: "Egyptian Magic",
+    image: "/games/game_9.png",
+    provider: "BT Gaming",
+    link: "/casino-games",
+  },
+  {
+    id: "g10",
+    title: "Fairy Tale",
+    image: "/games/game_110.png",
+    provider: "PG",
+    link: "/casino-games",
+  },
+  {
+    id: "g11",
+    title: "Fire Joker",
+    image: "/games/game_11.png",
+    provider: "PRAGMATIC PLAY",
+    isFavorite: true,
+    link: "/casino-games",
+  },
+  {
+    id: "g12",
+    title: "Fortune Tiger",
+    image: "/games/game_12.png",
+    provider: "PG",
+    link: "/casino-games",
+  },
+  {
+    id: "g13",
+    title: "Golden Buffalo",
+    image: "/games/game_13.png",
+    provider: "PRAGMATIC PLAY",
+    link: "/casino-games",
+  },
+  {
+    id: "g14",
+    title: "Great Rhino",
+    image: "/games/game_14.png",
+    provider: "BT Gaming",
+    link: "/casino-games",
+  },
+  {
+    id: "g15",
+    title: "Jungle Spirit",
+    image: "/games/game_15.png",
+    provider: "NetEnt",
+    link: "/casino-games",
+  },
+  {
+    id: "g16",
+    title: "Mega Moolah",
+    image: "/games/game_16.png",
+    provider: "Microgaming",
+    isFavorite: true,
+    link: "/casino-games",
+  },
+  {
+    id: "g17",
+    title: "Starburst",
+    image: "/games/game_1.png",
+    provider: "NetEnt",
+    link: "/casino-games",
+  },
+  {
+    id: "g18",
+    title: "Wolf Gold",
+    image: "/games/game_2.png",
+    provider: "Pragmatic Play",
+    link: "/casino-games",
   },
 ];
 
 // ---- Card component ----
 function GameCard({ game }: { game: Game }) {
   return (
-    <Link href={game.link ?? "/dashboard"}>
+    <Link href={game.link}>
       <MotionDiv
         whileHover={{ y: -4, scale: 1.02 }}
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
