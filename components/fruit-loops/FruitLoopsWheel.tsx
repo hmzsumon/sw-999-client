@@ -2,6 +2,11 @@
 "use client";
 
 /* ── Imports ───────────────────────────────────────────────────────────── */
+import { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
+import { v4 as uuidv4 } from "uuid";
+
 import {
   setFruitLoopsResults,
   setWinKey,
@@ -10,13 +15,8 @@ import {
   stopSpinning,
   type ResultItem,
 } from "@/redux/features/fruit-loops/fruitLoopsSlice";
-import {
-  usePlaceLucBetMutation,
-  useSettleLucBetMutation,
-} from "@/redux/features/game/wheelGameApi";
-import { useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { v4 as uuidv4 } from "uuid";
+
+import { placeBetAndHold, settleAndPayout } from "@/redux/features/bet/betFlow";
 import { Sound } from "./soundManager";
 
 /* ── Types ─────────────────────────────────────────────────────────────── */
@@ -29,7 +29,7 @@ type Segment = {
   multi: number;
 };
 
-/* ── Config (keep your artwork & layout) ───────────────────────────────── */
+/* ── Config (artwork/layout) ───────────────────────────────────────────── */
 const GAME_KEY = "fruit-loops-6";
 const SEGMENTS: Segment[] = [
   { id: 1, angle: 0, result: "Apple", emoji: "🍎", multi: 2.9 },
@@ -40,6 +40,7 @@ const SEGMENTS: Segment[] = [
   { id: 6, angle: 300, result: "Mango", emoji: "🥭", multi: 2.9 },
 ];
 
+// pointer points “up”; your wheel PNG is offset ~60deg clockwise → compensate:
 const POINTER_ANGLE = 0;
 const ASSET_OFFSET = -60;
 const EPS = 0.001;
@@ -50,7 +51,7 @@ const LOSE_DELAY_MS = 350;
 
 const norm360 = (v: number) => ((v % 360) + 360) % 360;
 
-/* ── Ending wobble steps ──────────────────────────────────────────────── */
+/* ── Ending wobble ─────────────────────────────────────────────────────── */
 const WOBBLE_1 = 12,
   WOBBLE_2 = 8,
   WOBBLE_3 = 5,
@@ -64,18 +65,16 @@ export default function FruitLoopsWheel() {
     (s: RootState) => s.fruitLoops
   );
 
-  const [placeLucBet] = usePlaceLucBetMutation();
-  const [settleLucBet] = useSettleLucBetMutation();
-
   const [resultText, setResultText] = useState("");
 
+  /* ── CreateJS / Stage refs ───────────────────────────────────────────── */
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const stageRef = useRef<any>(null);
   const wheelRef = useRef<any>(null);
   const createjsRef = useRef<any>(null);
   const roundIdRef = useRef<string | null>(null);
 
-  /* ── Setup Stage (kept your assets & positions) ──────────────────────── */
+  /* ── Setup Stage (assets & positions) ────────────────────────────────── */
   useEffect(() => {
     let cleanupTicker: (() => void) | null = null;
     let destroyed = false;
@@ -98,6 +97,7 @@ export default function FruitLoopsWheel() {
         const bmp = new createjs.Bitmap(img);
         bmp.regX = img.width / 2;
         bmp.regY = img.height / 2;
+
         const scale = Math.min(
           canvas.width / img.width,
           canvas.height / img.height
@@ -107,6 +107,7 @@ export default function FruitLoopsWheel() {
         bmp.x = canvas.width / 2;
         bmp.y = canvas.height / 2;
         bmp.rotation = 0;
+
         wheelRef.current = bmp;
         stage.addChild(bmp);
         stage.update();
@@ -128,28 +129,38 @@ export default function FruitLoopsWheel() {
     };
   }, []);
 
-  /* ── Spin intent → place-bet → startSpinning ─────────────────────────── */
+  /* ── Spin intent → wallet.placeBetAndHold → startSpinning ────────────── */
   useEffect(() => {
     if (spinId === 0) return;
     if (isSpinning) return;
     if (totalBet <= 0) return;
 
     (async () => {
+      // bets → array
       const betArray = Object.entries(bets || {})
         .filter(([, amt]) => Number(amt) > 0)
         .map(([segmentId, amount]) => ({
           segmentId: Number(segmentId),
           amount: Number(amount),
         }));
+
       if (!betArray.length) return;
 
-      const resp = await placeLucBet({
-        gameKey: GAME_KEY,
-        bets: betArray,
-      }).unwrap();
-      roundIdRef.current = resp?.roundId || null;
-      if (roundIdRef.current) dispatch(startSpinning());
-    })().catch(() => {});
+      try {
+        const { roundId } = await (dispatch as any)(
+          placeBetAndHold({
+            gameKey: GAME_KEY,
+            bets: betArray,
+            totalStake: Number(totalBet) || 0,
+          })
+        );
+
+        roundIdRef.current = roundId;
+        dispatch(startSpinning());
+      } catch (err: any) {
+        toast.error(err?.message ?? "Bet failed");
+      }
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spinId]);
 
@@ -183,8 +194,10 @@ export default function FruitLoopsWheel() {
       .call(() => {
         if (wheelRef.current)
           wheelRef.current.rotation = norm360(wheelRef.current.rotation);
+
         Sound.stop("spin");
 
+        // Result object for UI
         const res: ResultItem = {
           id: pick.id,
           name: pick.result,
@@ -197,26 +210,34 @@ export default function FruitLoopsWheel() {
         // 6 slices → 3 betting pots (1/4→1, 2/5→2, 3/6→3)
         const winPotId = ((pick.id - 1) % 3) + 1;
 
-        const stakeHere = Number((bets as any)?.[String(winPotId)]) || 0;
+        // local stake on that pot (just to infer loss sound)
+        const stakeHere =
+          Number((bets as any)?.[String(winPotId)]) ||
+          Number((bets as any)?.[winPotId]) ||
+          0;
         const isLoss = Math.floor(stakeHere * pick.multi) <= 0;
 
         (async () => {
           try {
             const rId = roundIdRef.current;
             if (rId) {
-              await settleLucBet({
-                gameKey: GAME_KEY,
-                roundId: rId,
-                winningSegmentId: pick.id,
-                finalMulti: pick.multi,
-              }).unwrap();
+              await (dispatch as any)(
+                settleAndPayout({
+                  gameKey: GAME_KEY,
+                  roundId: rId,
+                  winningSegmentId: pick.id,
+                  finalMulti: pick.multi,
+                })
+              );
             }
+
+            // trigger pot animations & win pop
             dispatch(setFruitLoopsResults([res]));
             dispatch(settleRound({ potId: winPotId, multi: res.multi }));
             dispatch(setWinKey(uuidv4()));
             roundIdRef.current = null;
           } catch {
-            // ignore
+            // ignore; UI calm
           } finally {
             dispatch(stopSpinning());
             if (soundOn && isLoss)

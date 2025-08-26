@@ -7,22 +7,29 @@ import {
   rebet,
   requestSpin,
 } from "@/redux/features/fruit-loops/fruitLoopsSlice";
+import { selectDisplayBalance } from "@/redux/features/wallet/walletSlice";
 import { RotateCcw } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import ChipPicker from "../game-ui/ChipPicker";
 import CircleIconButton from "../game-ui/CircleIconButton";
 import GlassBar from "../game-ui/GlassBar";
 import RulesBtn from "../game-ui/RulesBtn";
+import { formatBalance } from "../lucky-wheel/WheelNavbar";
 
 /* ── Component ─────────────────────────────────────────────────────────── */
 export default function BetControlBar() {
   const dispatch = useDispatch();
-  const { isSpinning, balance, totalBet, bets } = useSelector(
-    (s: any) => s.fruitLoops
-  );
+
+  // ✅ Wallet balance (server/optimistic) → UI shows "available"
+  const walletBalance = useSelector(selectDisplayBalance as any) ?? 0;
+
+  const { isSpinning, totalBet, bets } = useSelector((s: any) => s.fruitLoops);
+
+  const available = Math.max(0, walletBalance - Number(totalBet || 0));
 
   const canSpin = !isSpinning && totalBet > 0;
-  const canRebet = !isSpinning && Object.keys(bets || {}).length > 0;
+  const canRebet =
+    !isSpinning && Object.values(bets || {}).some((v: any) => Number(v) > 0);
 
   const onSpinIntent = () => {
     if (!canSpin) return;
@@ -53,11 +60,10 @@ export default function BetControlBar() {
         contentClassName="flex flex-col md:flex-row items-center md:justify-between justify-center gap-y-2 w-full"
       >
         <div className="flex flex-col md:grid grid-cols-3 items-center justify-between w-full gap-2">
-          {/* ── Left: Balance & Total Bet ──────────────────────────────────── */}
+          {/* ── Left: Chip picker + Clear ─────────────────────────────────── */}
           <div className="flex items-center justify-center order-1 gap-x-2 md:order-2">
             <ChipPicker />
 
-            {/* Clear Bets */}
             <CircleIconButton
               size={50}
               Icon={RotateCcw}
@@ -67,23 +73,23 @@ export default function BetControlBar() {
               onClick={() => dispatch(clearBets())}
             />
           </div>
-          {/* ── Left: Balance & Total Bet ──────────────────────────────────── */}
-          <div className="grid grid-cols-2 w-full  gap-2  order-2 md:order-1">
+
+          {/* ── Mid: Available + Total ───────────────────────────────────── */}
+          <div className="grid grid-cols-2 w-full gap-2 order-2 md:order-1">
             <RulesBtn
               size="md"
-              label={`BDT: ${balance.toLocaleString()}`}
+              label={`৳: ${formatBalance(available)}`} // ✅ show available
               colors={{ start: "#962529", mid: "#831015", end: "#be555c" }}
             />
             <RulesBtn
               size="md"
-              label={`TOTAL: ${totalBet.toLocaleString()}`}
+              label={`TB: ${formatBalance(totalBet)}`}
               colors={{ start: "#9cff6a", mid: "#6bdc46", end: "#36b12a" }}
             />
           </div>
 
-          {/* ── Right: Chips + Reset/Clear + Spin ─────────────────────────── */}
-          <div className="grid grid-cols-2 w-full  gap-2 order-2 md:order-2">
-            {/* Spin */}
+          {/* ── Right: Spin + Rebet ──────────────────────────────────────── */}
+          <div className="grid grid-cols-2 w-full gap-2 order-2 md:order-2">
             <RulesBtn
               size="lg"
               label={isSpinning ? "SPINNING…" : "SPIN"}
@@ -91,8 +97,6 @@ export default function BetControlBar() {
               disabled={!canSpin}
               onClick={onSpinIntent}
             />
-
-            {/* Rebet */}
             <RulesBtn
               size="lg"
               label="REBET"

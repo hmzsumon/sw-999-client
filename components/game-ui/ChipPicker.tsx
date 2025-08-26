@@ -26,6 +26,7 @@ export default function ChipPicker() {
   );
 
   const onPick = (amt: number) => {
+    console.log("Picked", amt);
     setSelected(amt);
     dispatch(selectChip(amt));
     if (soundOn) Sound.play("chipSelect");

@@ -4,7 +4,6 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 /* ── Types ────────────────────────────────────────────────────────────── */
 export type PotKey = string | number;
 
-/* ── Types ──────────────────────────────────────────────────────────────── */
 export type ResultItem = {
   id: number;
   name: string;
@@ -33,7 +32,11 @@ export type WinToast = {
 type FruitLoopsState = {
   isOpen: boolean;
   isSpinning: boolean;
+
+  // ⚠️ লোকাল balance আগে ছিল; এখন UI এ এটা ব্যাবহার করবেন না
+  // চাইলে রেখে দিন, তবে UI-তে দেখাবেন না—wallet থেকে দেখাবেন
   balance: number;
+
   selectedChip: number | null;
   bets: Record<string, number>;
   lastBets: Record<string, number>;
@@ -49,10 +52,8 @@ type FruitLoopsState = {
 
   lastError?: string | null;
 
-  /* ✅ নাম মেলানো */
-  fruitLoopsResults?: ResultItem[];
+  fruitLoopResults?: ResultItem[];
 
-  /* ── Sound ──────────────────────────────────────────────────────────── */
   soundOn: boolean;
 };
 
@@ -60,7 +61,7 @@ const initialState: FruitLoopsState = {
   isOpen: false,
   isSpinning: false,
 
-  balance: 10_000,
+  balance: 10_000, // ← থাকলেও UI তে ব্যবহার করবেন না
   selectedChip: null,
 
   bets: {},
@@ -70,7 +71,7 @@ const initialState: FruitLoopsState = {
   minBetAmount: 10,
   maxBetAmount: undefined,
 
-  fruitLoopsResults: [],
+  fruitLoopResults: [],
 
   spinId: 0,
   winKey: undefined,
@@ -79,7 +80,6 @@ const initialState: FruitLoopsState = {
 
   lastError: null,
 
-  /* ✅ ডিফল্টে সাউন্ড চালু */
   soundOn: true,
 };
 
@@ -101,50 +101,39 @@ const fruitLoopsSlice = createSlice({
     closeFruitLoopGame: (s) => {
       s.isOpen = false;
     },
-    /* ── Balance ──────────────────────────────────────────────────────── */
-    setBalance: (s, a: PayloadAction<number>) => {
-      s.balance = Math.max(0, a.payload | 0);
-    },
-    deposit: (s, a: PayloadAction<number>) => {
-      s.balance += Math.max(0, a.payload | 0);
-    },
 
     /* ── Chip select ─────────────────────────────────────────────────── */
     selectChip: (s, a: PayloadAction<number | null>) => {
       s.selectedChip = a.payload ?? null;
     },
 
-    /* ── Place Bet (2-pot limit enforced here) ────────────────────────── */
-    /* ── placeBetOn: enforce 2-pot rule + keep amounts ────────────────── */
+    /* ── Place Bet (2-pot limit; ❌ লোকাল balance-চেক কাটা) ──────────── */
     placeBetOn: (s, a: PayloadAction<{ itemId: number; amount?: number }>) => {
       if (s.isSpinning) return;
+
       const amt = (a.payload.amount ?? s.selectedChip ?? 0) | 0;
       if (amt <= 0) return;
       if (s.minBetAmount && amt < s.minBetAmount) return;
       if (typeof s.maxBetAmount === "number" && amt > s.maxBetAmount) return;
-      if (s.balance < amt) return;
 
       const id = a.payload.itemId;
 
-      // DISTINCT pots currently selected
+      // ACTIVE pots
       const activeIds = Object.keys(s.bets).filter(
         (k) => (s.bets as any)[k] > 0
       );
-      const alreadyActive = s.bets[id] > 0;
+      const alreadyActive = (s.bets as any)[id] > 0;
 
-      // 2-pot rule: block a third distinct id
-      if (!alreadyActive && activeIds.length >= 2) {
-        return;
-      }
+      // 2-pot rule
+      if (!alreadyActive && activeIds.length >= 2) return;
 
-      s.balance -= amt;
+      // ✅ শুধু bets/totalBet আপডেট, লোকাল balance না
       s.bets[id] = (s.bets[id] ?? 0) + amt;
       s.totalBet += amt;
     },
 
-    /* ── Clear Bets (refund) ─────────────────────────────────────────── */
+    /* ── Clear Bets (refund UI-reserve only) ─────────────────────────── */
     clearBets: (s) => {
-      if (s.totalBet > 0) s.balance += s.totalBet;
       s.bets = {};
       s.totalBet = 0;
       s.lastError = null;
@@ -163,12 +152,10 @@ const fruitLoopsSlice = createSlice({
         if (used >= MAX_ACTIVE_POTS) break;
         const amt = Number(amtRaw) | 0;
         if (amt <= 0) continue;
-        if (s.balance < amt) continue;
 
         const hadHere = (s.bets[id] ?? 0) > 0;
         if (!hadHere) used += 1;
 
-        s.balance -= amt;
         s.bets[id] = add(s.bets[id], amt);
         s.totalBet += amt;
       }
@@ -203,8 +190,6 @@ const fruitLoopsSlice = createSlice({
       const stake = s.bets[id] || 0;
       const winAmount = Math.floor(stake * (multi || 0));
 
-      if (winAmount > 0) s.balance += winAmount;
-
       const winKey = `${s.spinId}-${Date.now()}`;
       s.winKey = winKey;
 
@@ -232,9 +217,9 @@ const fruitLoopsSlice = createSlice({
       s.winToast.open = false;
     },
 
-    /* ── setFruitLoopsResults ─────────────────────────────────────────── */
+    /* ── Results ─────────────────────────────────────────────────────── */
     setFruitLoopsResults: (s, a: PayloadAction<ResultItem[]>) => {
-      s.fruitLoopsResults = a.payload;
+      s.fruitLoopResults = a.payload;
     },
 
     /* ── Sound toggle ─────────────────────────────────────────────────── */
@@ -247,10 +232,7 @@ const fruitLoopsSlice = createSlice({
   },
 });
 
-/* ── Exports ──────────────────────────────────────────────────────────── */
 export const {
-  setBalance,
-  deposit,
   selectChip,
   placeBetOn,
   clearBets,

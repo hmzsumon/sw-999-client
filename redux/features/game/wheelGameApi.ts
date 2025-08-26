@@ -31,6 +31,7 @@ export const wheelGameApi = apiSlice.injectEndpoints({
         method: "POST",
         body: { bets, gameKey },
       }),
+      invalidatesTags: (_res, _err) => [{ type: "User", id: "ME" }],
     }),
 
     settleLucBet: builder.mutation<SettleResp, SettleReq>({
@@ -39,6 +40,7 @@ export const wheelGameApi = apiSlice.injectEndpoints({
         method: "POST",
         body: { gameKey, ...rest },
       }),
+      invalidatesTags: (_res, _err) => [{ type: "User", id: "ME" }],
     }),
   }),
 });

@@ -21,6 +21,7 @@ import luckyWheelReducer from "./features/lucky-wheel/luckyWheelSlice";
 import miningReducer from "./features/mining/miningSlice";
 import tradeReducer from "./features/trade/tradeSlice";
 import sidebarReducer from "./features/ui/sidebarSlice";
+import walletReducer from "./features/wallet/walletSlice";
 import resetPassSlice from "./resetPassSlice";
 import signUpData from "./signupDataSlice";
 import stepperSlice from "./stepperSlice";
@@ -47,6 +48,7 @@ export const rootReducer = combineReducers({
   fruitLoops: fruitLoopsReducer,
   luckyTime: luckyTimeReducer,
   crazyLion: crazyLionSlice,
+  wallet: walletReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

@@ -5,6 +5,7 @@ import { Sound } from "@/components/fruit-loops/soundManager";
 /* ── Imports ───────────────────────────────────────────────────────────── */
 import useSilenceBGWhenHidden from "@/components/fruit-loops/useSilenceBGWhenHidden";
 import PreloadGate, { AssetInput } from "@/components/game-ui/PreloadGate";
+import { useWalletSync } from "@/hooks/useWalletSync";
 
 import Logo from "@/public/logo/logo.png";
 import { useLoadUserQuery } from "@/redux/features/auth/authApi";
@@ -15,6 +16,7 @@ import React, { useMemo } from "react";
 export default function FruitLoopsLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  useWalletSync(15000);
   const { isLoading: authLoading } = useLoadUserQuery();
 
   // ✅ এখানে কল করলেই ব্যাকগ্রাউন্ডে/অন্য ট্যাবে/মিনিমাইজে BG সাউন্ড থেমে যাবে

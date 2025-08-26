@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 
-const formatBalance = (amount: number): string => {
+export const formatBalance = (amount: number): string => {
   if (amount >= 1_000_000) {
     return (amount / 1_000_000).toFixed(2).replace(/\.0$/, "") + "M";
   }
