@@ -1,0 +1,18 @@
+নতুন ব্রাঞ্চে আপনার যাই থাকুক (staged/unstaged, এমনকি untracked), সবটা সেভ হবে; master একদম পরিষ্কার থাকবে।
+
+
+# নতুন ব্রাঞ্চে আছেন ধরে
+git stash -u -m "WIP: new-game"
+
+git switch master
+git pull --rebase origin master
+
+# master-এ কাজ করুন
+# ...
+git add -A
+git commit -m "Hotfix: <what you did>"
+git push origin master
+
+# আবার নতুন ব্রাঞ্চে ফিরে
+git switch feature/new-game
+git stash pop   # সেভ করা WIP ফেরত নিন (কনফ্লিক্ট এলে ঠিক করে add/commit)

@@ -49,10 +49,10 @@ const demoGames: Game[] = [
   },
   {
     id: "g4",
-    title: "Classic 777",
+    title: "Mini Roulette",
     image: "/games/game_4.png",
     provider: "PG",
-    link: "/casino-games",
+    link: "/roulette",
   },
   {
     id: "g5",
