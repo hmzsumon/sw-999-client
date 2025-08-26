@@ -71,7 +71,7 @@ const initialState: LuckyTimeState = {
   totalBet: 0,
   lastBets: {},
 
-  minBetAmount: 10,
+  minBetAmount: 1,
   maxBetAmount: undefined, // undefined => no hard upper limit
 
   luckyTimeResults: [],

@@ -81,7 +81,7 @@ const initialState: CrazyLionState = {
   totalBet: 0,
 
   minBetAmount: 1,
-  maxBetAmount: 500,
+  maxBetAmount: 1000,
 
   crazyLionResults: [],
   winKey: undefined,

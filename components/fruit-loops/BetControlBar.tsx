@@ -21,7 +21,7 @@ export default function BetControlBar() {
   const dispatch = useDispatch();
 
   // ✅ Wallet balance (server/optimistic) → UI shows "available"
-  const walletBalance = useSelector(selectDisplayBalance as any) ?? 0;
+  const walletBalance = Number(useSelector(selectDisplayBalance as any) ?? 0);
 
   const { isSpinning, totalBet, bets } = useSelector((s: any) => s.fruitLoops);
 

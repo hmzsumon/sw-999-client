@@ -15,8 +15,8 @@ export default function ChipPicker() {
   const soundOn = useSelector((s: any) => s.fruitLoops.soundOn);
 
   const chips = [
-    { amount: 10, baseColor: "#191919", faceColor: "#111827" },
-    { amount: 50, baseColor: "#2563EB", faceColor: "#1D4ED8" },
+    { amount: 1, baseColor: "#191919", faceColor: "#111827" },
+    { amount: 10, baseColor: "#2563EB", faceColor: "#1D4ED8" },
     { amount: 100, baseColor: "#EF4444", faceColor: "#DC2626" },
     { amount: 500, baseColor: "#22C55E", faceColor: "#16A34A" },
   ];
@@ -26,7 +26,6 @@ export default function ChipPicker() {
   );
 
   const onPick = (amt: number) => {
-    console.log("Picked", amt);
     setSelected(amt);
     dispatch(selectChip(amt));
     if (soundOn) Sound.play("chipSelect");

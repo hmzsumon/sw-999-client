@@ -68,7 +68,7 @@ const initialState: FruitLoopsState = {
   lastBets: {},
   totalBet: 0,
 
-  minBetAmount: 10,
+  minBetAmount: 1,
   maxBetAmount: undefined,
 
   fruitLoopResults: [],

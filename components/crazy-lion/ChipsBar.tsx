@@ -13,7 +13,7 @@ const CHIP_SET = [
   {
     key: "black",
     size: 50,
-    amount: 10,
+    amount: 1,
     baseColor: "#191919",
     faceColor: "#111827",
     stripeColor: "#ffffff",
@@ -22,7 +22,7 @@ const CHIP_SET = [
   {
     key: "blue",
     size: 50,
-    amount: 50,
+    amount: 10,
     baseColor: "#2563EB",
     faceColor: "#1D4ED8",
     stripeColor: "#ffffff",
